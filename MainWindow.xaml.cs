@@ -1283,8 +1283,7 @@ public partial class MainWindow : Window
         base.OnSourceInitialized(e);
         var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
         System.Windows.Interop.HwndSource.FromHwnd(hwnd)?.AddHook(HotkeyHook);
-        // Ctrl + Shift + O, sem repetição ao segurar
-        RegisterHotKey(hwnd, HotkeyId, 0x0002 | 0x0004 | 0x4000, 0x4F);
+        RegisterSavedOverlayHotkey();
     }
 
     private IntPtr HotkeyHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)

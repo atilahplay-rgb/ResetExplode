@@ -1592,9 +1592,19 @@
                             <Grid>
                                 <StackPanel>
                                     <CheckBox x:Name="ChkOverlay" Content="Mostrar overlay" FontSize="15" Checked="ChkOverlay_Changed" Unchecked="ChkOverlay_Changed"/>
-                                    <TextBlock Foreground="{DynamicResource Muted}" Margin="46,6,0,0" TextWrapping="Wrap">
-                                        Atalho global: <Run Text="Ctrl + Shift + O" FontFamily="{StaticResource Mono}" Foreground="{DynamicResource Fg}"/> liga e desliga, inclusive dentro do jogo.
-                                    </TextBlock>
+                                    <StackPanel Margin="46,8,0,0">
+                                        <WrapPanel>
+                                            <TextBlock Text="Atalho global:" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                            <Button x:Name="BtnHotkey" Style="{StaticResource OutlineButton}" FontFamily="{StaticResource Mono}" FontSize="12"
+                                                    Padding="14,6" MinWidth="150" Margin="0,0,6,0" ToolTip="Clique e pressione a nova combinação (1 a 3 teclas)"
+                                                    Click="BtnHotkey_Click" PreviewKeyDown="BtnHotkey_PreviewKeyDown" LostKeyboardFocus="BtnHotkey_LostKeyboardFocus"/>
+                                            <Button x:Name="BtnHotkeyReset" Style="{StaticResource OutlineButton}" Content="PADRÃO" FontSize="10.5" Padding="12,6"
+                                                    Margin="0,0,10,0" ToolTip="Voltar para Ctrl + Shift + O" Click="BtnHotkeyReset_Click"/>
+                                            <TextBlock Text="liga e desliga, inclusive dentro do jogo." Foreground="{DynamicResource Muted}" VerticalAlignment="Center"/>
+                                        </WrapPanel>
+                                        <TextBlock x:Name="OvHotkeyMsg" Foreground="{DynamicResource Muted}" FontSize="11.5" TextWrapping="Wrap"
+                                                   Margin="0,6,0,0" Visibility="Collapsed"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Grid>
                         </Border>

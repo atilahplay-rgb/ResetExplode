@@ -80,6 +80,9 @@ public sealed class AppSettings
     public double OverlayScale { get; set; } = 1.0;
     /// <summary>Itens escolhidos para o overlay (chaves de OverlayMetrics); null = padrão.</summary>
     public List<string>? OverlayItems { get; set; }
+    /// <summary>Atalho global que liga/desliga o overlay: modificadores (Alt=1, Ctrl=2, Shift=4, Win=8) e código da tecla (VK). Padrão: Ctrl + Shift + O.</summary>
+    public uint OverlayHotkeyMods { get; set; } = 0x0002 | 0x0004;
+    public uint OverlayHotkeyVk { get; set; } = 0x4F;
 
     [System.Text.Json.Serialization.JsonIgnore] // nunca gravar a chave em texto puro
     public string? HowManyFpsKey
