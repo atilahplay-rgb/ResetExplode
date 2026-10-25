@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace ResetExplode;
@@ -76,18 +77,31 @@ public partial class MainWindow
 
     // ================= Tema (modo + cor de destaque) =================
 
+    private DateTime _themePopupClosedAt = DateTime.MinValue;
+
+    /// <summary>Botão da barra de título: abre/fecha o menu de aparência (modo e cor de destaque).</summary>
     private void Theme_Click(object sender, RoutedEventArgs e)
     {
-        // Atalho rápido: alterna claro/escuro (a escolha fica salva). Cor de destaque e "usar o do sistema" ficam em Personalização.
-        ThemeManager.SetMode(ThemeManager.IsLight ? ThemeMode.Dark : ThemeMode.Light);
+        if (ThemePopup.IsOpen) { ThemePopup.IsOpen = false; return; }
+        // Clicar no botão com o menu aberto fecha o menu (clique fora) e, logo em seguida, chega aqui: não reabrir.
+        if ((DateTime.UtcNow - _themePopupClosedAt).TotalMilliseconds < 250) return;
+        InitAppearance();
+        ThemePopup.IsOpen = true;
     }
 
-    /// <summary>Mostra o ícone do modo para onde o clique leva (sol = ir para o claro, lua = ir para o escuro) e troca o logo.</summary>
+    private void ThemePopup_Closed(object? sender, EventArgs e) => _themePopupClosedAt = DateTime.UtcNow;
+
+    private void ThemePopup_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape) ThemePopup.IsOpen = false;
+    }
+
+    /// <summary>Mostra o ícone do modo atual (sol = claro, lua = escuro) e troca o logo.</summary>
     private void UpdateThemeButton()
     {
         bool light = ThemeManager.IsLight;
-        BtnTheme.Content = light ? "\uE708" : "\uE706";
-        BtnTheme.ToolTip = light ? "Modo escuro" : "Modo claro";
+        BtnTheme.Content = light ? "\uE706" : "\uE708";
+        BtnTheme.ToolTip = "Aparência (modo e cor de destaque)";
         TitleLogo.Source = new System.Windows.Media.Imaging.BitmapImage(
             new Uri(light ? "pack://application:,,,/Assets/logo-dark.png" : "pack://application:,,,/Assets/logo.png"));
     }

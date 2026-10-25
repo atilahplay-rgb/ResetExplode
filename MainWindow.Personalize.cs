@@ -5,8 +5,8 @@ using System.Windows.Media;
 
 namespace ResetExplode;
 
-// Página PERSONALIZAÇÃO: modo (escuro / claro / do sistema) e cor de destaque, no estilo das configurações do Windows 11.
-// A troca em si é feita pelo ThemeManager; aqui só ficam os controles da página.
+// Menu de APARÊNCIA (botão da barra de título): modo (escuro / claro / do sistema) e cor de destaque, no estilo do Windows 11.
+// A troca em si é feita pelo ThemeManager; aqui só ficam os controles do menu.
 public partial class MainWindow
 {
     private bool _appearInit;
@@ -14,7 +14,7 @@ public partial class MainWindow
     private string _lastManual = "#0078D7";   // última cor manual: é a que volta ao clicar em "Manual"
     private readonly List<(Border Swatch, string Hex)> _swatches = new();
 
-    /// <summary>Qualquer mudança de aparência (clique aqui, botão da barra de título ou o Windows mudando sozinho).</summary>
+    /// <summary>Qualquer mudança de aparência (clique no menu, atalho ou o Windows mudando sozinho).</summary>
     private void OnThemeChanged()
     {
         UpdateThemeButton();
@@ -33,12 +33,12 @@ public partial class MainWindow
                 ThemeManager.TryParseHex(hex, out var c);
                 var swatch = new Border
                 {
-                    Width = 36, Height = 36, CornerRadius = new CornerRadius(8), Margin = new Thickness(0, 0, 6, 6),
+                    Width = 26, Height = 26, CornerRadius = new CornerRadius(6), Margin = new Thickness(0, 0, 4, 4),
                     Background = new SolidColorBrush(c), BorderThickness = new Thickness(2), BorderBrush = Brushes.Transparent,
                     Cursor = Cursors.Hand, ToolTip = hex, Tag = hex,
                     Child = new TextBlock
                     {
-                        Text = "\uE73E", FontFamily = (FontFamily)FindResource("Icons"), FontSize = 14,
+                        Text = "\uE73E", FontFamily = (FontFamily)FindResource("Icons"), FontSize = 12,
                         Foreground = new SolidColorBrush(ThemeManager.InkFor(c)),
                         HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
                         Visibility = Visibility.Collapsed,
@@ -52,7 +52,7 @@ public partial class MainWindow
         SyncAppearance();
     }
 
-    /// <summary>Põe os controles da página de acordo com o que o ThemeManager está usando agora.</summary>
+    /// <summary>Põe os controles do menu de acordo com o que o ThemeManager está usando agora.</summary>
     private void SyncAppearance()
     {
         _appearBusy = true;
@@ -67,9 +67,6 @@ public partial class MainWindow
             string kind = manual ? "manual" : key;
             foreach (var rb in AccentKindPanel.Children.OfType<RadioButton>())
                 rb.IsChecked = (string)rb.Tag == kind;
-
-            AccentManualPanel.IsEnabled = manual;
-            AccentManualPanel.Opacity = manual ? 1 : 0.4;
 
             if (manual) _lastManual = key;
             var ring = (Brush)FindResource("Fg");
@@ -89,11 +86,11 @@ public partial class MainWindow
             string eff = ThemeManager.ToHex(ThemeManager.Accent);
             AccentInfo.Text = kind switch
             {
-                "default" => "Botões, abas e barras ficam em preto e branco (o visual original do app).",
-                "system" => $"Seguindo a cor de destaque do Windows ({eff}). Se você mudar no Windows, o app muda junto.",
+                "default" => "Preto e branco: o visual original do app.",
+                "system" => $"Seguindo a cor do Windows ({eff}); se você mudar lá, o app muda junto.",
                 _ => string.Equals(eff, key, StringComparison.OrdinalIgnoreCase)
                     ? $"Cor atual: {eff}"
-                    : $"Cor escolhida: {key} · usada como {eff}, levemente ajustada para ter contraste com o fundo.",
+                    : $"Cor escolhida {key}, usada como {eff} (ajustada para ter contraste com o fundo).",
             };
         }
         finally { _appearBusy = false; }

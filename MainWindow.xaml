@@ -128,7 +128,79 @@
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"
                         WindowChrome.IsHitTestVisibleInChrome="True">
-                <Button x:Name="BtnTheme" Style="{StaticResource CaptionButton}" Content="&#xE706;" Click="Theme_Click" ToolTip="Modo claro"/>
+                <Button x:Name="BtnTheme" Style="{StaticResource CaptionButton}" Content="&#xE706;" Click="Theme_Click" ToolTip="Aparência"/>
+                <!-- Menu de aparência (modo + cor de destaque), preso ao botão acima, alinhado à direita dele -->
+                <Popup x:Name="ThemePopup" PlacementTarget="{Binding ElementName=BtnTheme}" Placement="Bottom" HorizontalOffset="-366" VerticalOffset="-4"
+                       StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" Closed="ThemePopup_Closed">
+                    <Border Margin="12" Width="400" Background="{DynamicResource Panel}" BorderBrush="{DynamicResource LineStrong}" BorderThickness="1"
+                            CornerRadius="16" Padding="16" TextElement.Foreground="{DynamicResource Fg}" TextElement.FontSize="13" KeyDown="ThemePopup_KeyDown">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.5" Color="Black"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,12">
+                                <Button DockPanel.Dock="Right" Style="{StaticResource OutlineButton}" Content="RESTAURAR" Padding="12,5" FontSize="10.5"
+                                        VerticalAlignment="Center" Click="AppearanceReset_Click"/>
+                                <TextBlock Text="Aparência" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </DockPanel>
+
+                            <TextBlock Text="MODO" Style="{StaticResource Label}"/>
+                            <WrapPanel x:Name="ThemeModePanel">
+                                <RadioButton Style="{StaticResource Chip}" GroupName="ThemeMode" Content="Escuro" Tag="dark" Checked="ThemeMode_Checked"/>
+                                <RadioButton Style="{StaticResource Chip}" GroupName="ThemeMode" Content="Claro" Tag="light" Checked="ThemeMode_Checked"/>
+                                <RadioButton Style="{StaticResource Chip}" GroupName="ThemeMode" Content="Usar o do sistema" Tag="system" Checked="ThemeMode_Checked"/>
+                            </WrapPanel>
+
+                            <TextBlock Text="COR DE DESTAQUE" Style="{StaticResource Label}" Margin="0,8,0,8"/>
+                            <WrapPanel x:Name="AccentKindPanel">
+                                <RadioButton Style="{StaticResource Chip}" GroupName="AccentKind" Content="Preto e branco" Tag="default" Checked="AccentKind_Checked"/>
+                                <RadioButton Style="{StaticResource Chip}" GroupName="AccentKind" Content="Cor do Windows" Tag="system" Checked="AccentKind_Checked"/>
+                                <RadioButton Style="{StaticResource Chip}" GroupName="AccentKind" Content="Manual" Tag="manual" Checked="AccentKind_Checked"/>
+                            </WrapPanel>
+                            <!-- Clicar numa cor já passa para o modo Manual -->
+                            <WrapPanel x:Name="AccentSwatches" Margin="0,2,0,0"/>
+
+                            <ToggleButton x:Name="CustomToggle" Style="{StaticResource NavGroup}" Content="COR PERSONALIZADA" Margin="-12,4,-12,0"/>
+                            <StackPanel x:Name="AccentManualPanel" Margin="0,6,0,0"
+                                        Visibility="{Binding IsChecked, ElementName=CustomToggle, Converter={StaticResource BoolVis}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="22"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="R" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" FontFamily="{StaticResource Mono}"/>
+                                    <Slider x:Name="SlR" Grid.Column="1" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                            ValueChanged="AccentRgb_Changed" LostMouseCapture="AccentRgb_Commit" LostKeyboardFocus="AccentRgb_Commit"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Value, ElementName=SlR, StringFormat={}{0:0}}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               FontFamily="{StaticResource Mono}" Foreground="{DynamicResource Muted}"/>
+                                    <TextBlock Grid.Row="1" Text="G" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" FontFamily="{StaticResource Mono}"/>
+                                    <Slider x:Name="SlG" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                            ValueChanged="AccentRgb_Changed" LostMouseCapture="AccentRgb_Commit" LostKeyboardFocus="AccentRgb_Commit"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Value, ElementName=SlG, StringFormat={}{0:0}}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               FontFamily="{StaticResource Mono}" Foreground="{DynamicResource Muted}"/>
+                                    <TextBlock Grid.Row="2" Text="B" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" FontFamily="{StaticResource Mono}"/>
+                                    <Slider x:Name="SlB" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                            ValueChanged="AccentRgb_Changed" LostMouseCapture="AccentRgb_Commit" LostKeyboardFocus="AccentRgb_Commit"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Value, ElementName=SlB, StringFormat={}{0:0}}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               FontFamily="{StaticResource Mono}" Foreground="{DynamicResource Muted}"/>
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <TextBox x:Name="HexBox" Width="110" Tag="#RRGGBB" FontFamily="{StaticResource Mono}" MaxLength="7"
+                                             KeyDown="HexBox_KeyDown" LostFocus="HexBox_LostFocus"/>
+                                    <TextBlock Text="Digite o código e tecle Enter" Foreground="{DynamicResource Faint}" FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <TextBlock x:Name="AccentInfo" Foreground="{DynamicResource Muted}" FontSize="11.5" TextWrapping="Wrap" Margin="0,12,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Popup>
                 <Button Style="{StaticResource CaptionButton}" Content="&#xE921;" Click="Min_Click" ToolTip="Minimizar"/>
                 <Button x:Name="BtnMax" Style="{StaticResource CaptionButton}" Content="&#xE922;" Click="Max_Click" ToolTip="Maximizar"/>
                 <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;" Click="Close_Click" ToolTip="Fechar"/>
@@ -318,12 +390,6 @@
                                 </StackPanel>
                             </RadioButton>
                             </StackPanel>
-                            <RadioButton x:Name="NavAppearance" Style="{StaticResource NavItem}" Tag="PageAppearance" Checked="Nav_Checked" Margin="12,10,12,1">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE771;" FontFamily="{StaticResource Icons}" FontSize="14" Width="28" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Personalização" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </RadioButton>
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>
@@ -331,100 +397,6 @@
 
             <!-- ===== Conteúdo ===== -->
             <Grid Grid.Row="1" Grid.Column="1">
-
-                <!-- ===== PERSONALIZAÇÃO (modo + cor de destaque, estilo Windows 11) ===== -->
-                <ScrollViewer x:Name="PageAppearance" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="36,30,36,30">
-                        <StackPanel Margin="0,0,0,20">
-                            <TextBlock Text="Personalização" Style="{StaticResource H1}"/>
-                            <TextBlock Text="Modo e cor de destaque, como em Configurações › Personalização › Cores do Windows 11" Style="{StaticResource Sub}"/>
-                        </StackPanel>
-
-                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,14">
-                            <StackPanel>
-                                <TextBlock Text="MODO" Style="{StaticResource Label}"/>
-                                <WrapPanel x:Name="ThemeModePanel">
-                                    <RadioButton Style="{StaticResource Chip}" GroupName="ThemeMode" Content="Escuro" Tag="dark" Checked="ThemeMode_Checked"/>
-                                    <RadioButton Style="{StaticResource Chip}" GroupName="ThemeMode" Content="Claro" Tag="light" Checked="ThemeMode_Checked"/>
-                                    <RadioButton Style="{StaticResource Chip}" GroupName="ThemeMode" Content="Usar o do sistema" Tag="system" Checked="ThemeMode_Checked"/>
-                                </WrapPanel>
-                                <TextBlock Foreground="{DynamicResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"
-                                           Text="Em &quot;Usar o do sistema&quot; o app acompanha o modo escuro/claro do Windows na hora, sem reiniciar."/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,14">
-                            <StackPanel>
-                                <TextBlock Text="COR DE DESTAQUE" Style="{StaticResource Label}"/>
-                                <WrapPanel x:Name="AccentKindPanel">
-                                    <RadioButton Style="{StaticResource Chip}" GroupName="AccentKind" Content="Preto e branco" Tag="default" Checked="AccentKind_Checked"/>
-                                    <RadioButton Style="{StaticResource Chip}" GroupName="AccentKind" Content="Automática (cor do Windows)" Tag="system" Checked="AccentKind_Checked"/>
-                                    <RadioButton Style="{StaticResource Chip}" GroupName="AccentKind" Content="Manual" Tag="manual" Checked="AccentKind_Checked"/>
-                                </WrapPanel>
-
-                                <StackPanel x:Name="AccentManualPanel" Margin="0,10,0,0">
-                                    <TextBlock Text="CORES DO WINDOWS" Style="{StaticResource Label}"/>
-                                    <WrapPanel x:Name="AccentSwatches" MaxWidth="560" HorizontalAlignment="Left"/>
-
-                                    <TextBlock Text="COR PERSONALIZADA" Style="{StaticResource Label}" Margin="0,14,0,8"/>
-                                    <Grid MaxWidth="560" HorizontalAlignment="Left">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="22"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="40"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="30"/>
-                                            <RowDefinition Height="30"/>
-                                            <RowDefinition Height="30"/>
-                                        </Grid.RowDefinitions>
-                                        <TextBlock Text="R" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" FontFamily="{StaticResource Mono}"/>
-                                        <Slider x:Name="SlR" Grid.Column="1" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
-                                                ValueChanged="AccentRgb_Changed" LostMouseCapture="AccentRgb_Commit" LostKeyboardFocus="AccentRgb_Commit"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding Value, ElementName=SlR, StringFormat={}{0:0}}" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                                   FontFamily="{StaticResource Mono}" Foreground="{DynamicResource Muted}"/>
-                                        <TextBlock Grid.Row="1" Text="G" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" FontFamily="{StaticResource Mono}"/>
-                                        <Slider x:Name="SlG" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
-                                                ValueChanged="AccentRgb_Changed" LostMouseCapture="AccentRgb_Commit" LostKeyboardFocus="AccentRgb_Commit"/>
-                                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Value, ElementName=SlG, StringFormat={}{0:0}}" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                                   FontFamily="{StaticResource Mono}" Foreground="{DynamicResource Muted}"/>
-                                        <TextBlock Grid.Row="2" Text="B" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" FontFamily="{StaticResource Mono}"/>
-                                        <Slider x:Name="SlB" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
-                                                ValueChanged="AccentRgb_Changed" LostMouseCapture="AccentRgb_Commit" LostKeyboardFocus="AccentRgb_Commit"/>
-                                        <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Value, ElementName=SlB, StringFormat={}{0:0}}" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                                   FontFamily="{StaticResource Mono}" Foreground="{DynamicResource Muted}"/>
-                                    </Grid>
-                                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                                        <TextBox x:Name="HexBox" Width="120" Tag="#RRGGBB" FontFamily="{StaticResource Mono}" MaxLength="7"
-                                                 KeyDown="HexBox_KeyDown" LostFocus="HexBox_LostFocus"/>
-                                        <TextBlock Text="Digite um código e tecle Enter" Foreground="{DynamicResource Faint}" FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"/>
-                                    </StackPanel>
-                                </StackPanel>
-
-                                <TextBlock x:Name="AccentInfo" Foreground="{DynamicResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,12,0,0"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,14">
-                            <StackPanel>
-                                <TextBlock Text="PRÉVIA" Style="{StaticResource Label}"/>
-                                <WrapPanel VerticalAlignment="Center">
-                                    <Button Style="{StaticResource PrimaryButton}" Content="PRIMÁRIO" Margin="0,0,10,8"/>
-                                    <Button Style="{StaticResource OutlineButton}" Content="CONTORNO" Margin="0,0,16,8"/>
-                                    <RadioButton Style="{StaticResource Chip}" GroupName="PreviewChip" Content="Selecionado" IsChecked="True" Margin="0,4,12,8"/>
-                                    <CheckBox Content="Ativado" IsChecked="True" Margin="0,6,20,8"/>
-                                    <Slider Width="150" Minimum="0" Maximum="100" Value="60" Margin="0,6,20,8" VerticalAlignment="Center"/>
-                                    <Grid Width="150" Height="6" Margin="0,6,0,8" VerticalAlignment="Center">
-                                        <Border Background="{DynamicResource Line}" CornerRadius="3"/>
-                                        <Border Background="{DynamicResource Accent}" CornerRadius="3" HorizontalAlignment="Left" Width="90"/>
-                                    </Grid>
-                                </WrapPanel>
-                            </StackPanel>
-                        </Border>
-
-                        <Button Style="{StaticResource OutlineButton}" Content="RESTAURAR PADRÃO" HorizontalAlignment="Left" Padding="20,9" Click="AppearanceReset_Click"/>
-                    </StackPanel>
-                </ScrollViewer>
 
                 <!-- ===== VISÃO GERAL (painel) ===== -->
                 <ScrollViewer x:Name="PageDash" VerticalScrollBarVisibility="Auto">
