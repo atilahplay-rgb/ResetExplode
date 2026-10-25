@@ -197,7 +197,6 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <TextBlock x:Name="AccentInfo" Foreground="{DynamicResource Muted}" FontSize="11.5" TextWrapping="Wrap" Margin="0,12,0,0"/>
                         </StackPanel>
                     </Border>
                 </Popup>

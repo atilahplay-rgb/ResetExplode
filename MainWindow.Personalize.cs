@@ -82,16 +82,6 @@ public partial class MainWindow
                 SlR.Value = c.R; SlG.Value = c.G; SlB.Value = c.B;
                 HexBox.Text = ThemeManager.ToHex(c);
             }
-
-            string eff = ThemeManager.ToHex(ThemeManager.Accent);
-            AccentInfo.Text = kind switch
-            {
-                "default" => "Preto e branco: o visual original do app.",
-                "system" => $"Seguindo a cor do Windows ({eff}); se você mudar lá, o app muda junto.",
-                _ => string.Equals(eff, key, StringComparison.OrdinalIgnoreCase)
-                    ? $"Cor atual: {eff}"
-                    : $"Cor escolhida {key}, usada como {eff} (ajustada para ter contraste com o fundo).",
-            };
         }
         finally { _appearBusy = false; }
     }
