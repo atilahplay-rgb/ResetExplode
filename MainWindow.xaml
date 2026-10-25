@@ -87,7 +87,7 @@
                 <TextBlock Grid.Column="1" Text="{Binding Value}" FontFamily="{StaticResource Mono}" HorizontalAlignment="Right"
                            TextTrimming="CharacterEllipsis"/>
                 <Grid Grid.Row="1" Grid.ColumnSpan="2" Height="4" Margin="0,6,0,0" Background="{DynamicResource Line}">
-                    <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                    <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                         <Border.RenderTransform>
                             <ScaleTransform ScaleX="{Binding Fraction}"/>
                         </Border.RenderTransform>
@@ -318,6 +318,12 @@
                                 </StackPanel>
                             </RadioButton>
                             </StackPanel>
+                            <RadioButton x:Name="NavAppearance" Style="{StaticResource NavItem}" Tag="PageAppearance" Checked="Nav_Checked" Margin="12,10,12,1">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE771;" FontFamily="{StaticResource Icons}" FontSize="14" Width="28" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Personalização" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </RadioButton>
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>
@@ -325,6 +331,100 @@
 
             <!-- ===== Conteúdo ===== -->
             <Grid Grid.Row="1" Grid.Column="1">
+
+                <!-- ===== PERSONALIZAÇÃO (modo + cor de destaque, estilo Windows 11) ===== -->
+                <ScrollViewer x:Name="PageAppearance" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="36,30,36,30">
+                        <StackPanel Margin="0,0,0,20">
+                            <TextBlock Text="Personalização" Style="{StaticResource H1}"/>
+                            <TextBlock Text="Modo e cor de destaque, como em Configurações › Personalização › Cores do Windows 11" Style="{StaticResource Sub}"/>
+                        </StackPanel>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="MODO" Style="{StaticResource Label}"/>
+                                <WrapPanel x:Name="ThemeModePanel">
+                                    <RadioButton Style="{StaticResource Chip}" GroupName="ThemeMode" Content="Escuro" Tag="dark" Checked="ThemeMode_Checked"/>
+                                    <RadioButton Style="{StaticResource Chip}" GroupName="ThemeMode" Content="Claro" Tag="light" Checked="ThemeMode_Checked"/>
+                                    <RadioButton Style="{StaticResource Chip}" GroupName="ThemeMode" Content="Usar o do sistema" Tag="system" Checked="ThemeMode_Checked"/>
+                                </WrapPanel>
+                                <TextBlock Foreground="{DynamicResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"
+                                           Text="Em &quot;Usar o do sistema&quot; o app acompanha o modo escuro/claro do Windows na hora, sem reiniciar."/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="COR DE DESTAQUE" Style="{StaticResource Label}"/>
+                                <WrapPanel x:Name="AccentKindPanel">
+                                    <RadioButton Style="{StaticResource Chip}" GroupName="AccentKind" Content="Preto e branco" Tag="default" Checked="AccentKind_Checked"/>
+                                    <RadioButton Style="{StaticResource Chip}" GroupName="AccentKind" Content="Automática (cor do Windows)" Tag="system" Checked="AccentKind_Checked"/>
+                                    <RadioButton Style="{StaticResource Chip}" GroupName="AccentKind" Content="Manual" Tag="manual" Checked="AccentKind_Checked"/>
+                                </WrapPanel>
+
+                                <StackPanel x:Name="AccentManualPanel" Margin="0,10,0,0">
+                                    <TextBlock Text="CORES DO WINDOWS" Style="{StaticResource Label}"/>
+                                    <WrapPanel x:Name="AccentSwatches" MaxWidth="560" HorizontalAlignment="Left"/>
+
+                                    <TextBlock Text="COR PERSONALIZADA" Style="{StaticResource Label}" Margin="0,14,0,8"/>
+                                    <Grid MaxWidth="560" HorizontalAlignment="Left">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="22"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="40"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="30"/>
+                                            <RowDefinition Height="30"/>
+                                            <RowDefinition Height="30"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="R" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" FontFamily="{StaticResource Mono}"/>
+                                        <Slider x:Name="SlR" Grid.Column="1" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                                ValueChanged="AccentRgb_Changed" LostMouseCapture="AccentRgb_Commit" LostKeyboardFocus="AccentRgb_Commit"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Value, ElementName=SlR, StringFormat={}{0:0}}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   FontFamily="{StaticResource Mono}" Foreground="{DynamicResource Muted}"/>
+                                        <TextBlock Grid.Row="1" Text="G" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" FontFamily="{StaticResource Mono}"/>
+                                        <Slider x:Name="SlG" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                                ValueChanged="AccentRgb_Changed" LostMouseCapture="AccentRgb_Commit" LostKeyboardFocus="AccentRgb_Commit"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Value, ElementName=SlG, StringFormat={}{0:0}}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   FontFamily="{StaticResource Mono}" Foreground="{DynamicResource Muted}"/>
+                                        <TextBlock Grid.Row="2" Text="B" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" FontFamily="{StaticResource Mono}"/>
+                                        <Slider x:Name="SlB" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                                ValueChanged="AccentRgb_Changed" LostMouseCapture="AccentRgb_Commit" LostKeyboardFocus="AccentRgb_Commit"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Value, ElementName=SlB, StringFormat={}{0:0}}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   FontFamily="{StaticResource Mono}" Foreground="{DynamicResource Muted}"/>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                        <TextBox x:Name="HexBox" Width="120" Tag="#RRGGBB" FontFamily="{StaticResource Mono}" MaxLength="7"
+                                                 KeyDown="HexBox_KeyDown" LostFocus="HexBox_LostFocus"/>
+                                        <TextBlock Text="Digite um código e tecle Enter" Foreground="{DynamicResource Faint}" FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <TextBlock x:Name="AccentInfo" Foreground="{DynamicResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,12,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="PRÉVIA" Style="{StaticResource Label}"/>
+                                <WrapPanel VerticalAlignment="Center">
+                                    <Button Style="{StaticResource PrimaryButton}" Content="PRIMÁRIO" Margin="0,0,10,8"/>
+                                    <Button Style="{StaticResource OutlineButton}" Content="CONTORNO" Margin="0,0,16,8"/>
+                                    <RadioButton Style="{StaticResource Chip}" GroupName="PreviewChip" Content="Selecionado" IsChecked="True" Margin="0,4,12,8"/>
+                                    <CheckBox Content="Ativado" IsChecked="True" Margin="0,6,20,8"/>
+                                    <Slider Width="150" Minimum="0" Maximum="100" Value="60" Margin="0,6,20,8" VerticalAlignment="Center"/>
+                                    <Grid Width="150" Height="6" Margin="0,6,0,8" VerticalAlignment="Center">
+                                        <Border Background="{DynamicResource Line}" CornerRadius="3"/>
+                                        <Border Background="{DynamicResource Accent}" CornerRadius="3" HorizontalAlignment="Left" Width="90"/>
+                                    </Grid>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Button Style="{StaticResource OutlineButton}" Content="RESTAURAR PADRÃO" HorizontalAlignment="Left" Padding="20,9" Click="AppearanceReset_Click"/>
+                    </StackPanel>
+                </ScrollViewer>
 
                 <!-- ===== VISÃO GERAL (painel) ===== -->
                 <ScrollViewer x:Name="PageDash" VerticalScrollBarVisibility="Auto">
@@ -366,7 +466,7 @@
                                     </Grid>
                                     <Canvas x:Name="DashChart" Height="210" ClipToBounds="True" SizeChanged="DashChart_SizeChanged"/>
                                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                        <Rectangle Width="14" Height="2" Fill="{DynamicResource Fg}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <Rectangle Width="14" Height="2" Fill="{DynamicResource Accent}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                         <TextBlock Text="CPU" Foreground="{DynamicResource Muted}" FontSize="11" Margin="0,0,16,0"/>
                                         <Line X1="0" X2="14" Stroke="{DynamicResource Muted}" StrokeDashArray="3 2" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                         <TextBlock Text="GPU" Foreground="{DynamicResource Muted}" FontSize="11"/>
@@ -632,7 +732,7 @@
                                                             <!-- Anel: trilha cinza = vazio, arco branco = usado -->
                                                             <Grid Width="84" Height="84" Margin="0,0,16,0" VerticalAlignment="Center">
                                                                 <Ellipse Width="72" Height="72" Stroke="{DynamicResource Line}" StrokeThickness="8"/>
-                                                                <Path Data="{Binding UsedArc}" Stroke="{DynamicResource Fg}" StrokeThickness="8" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat"/>
+                                                                <Path Data="{Binding UsedArc}" Stroke="{DynamicResource Accent}" StrokeThickness="8" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat"/>
                                                                 <TextBlock Text="{Binding UsedPercent}" FontFamily="{StaticResource Mono}" FontSize="15"
                                                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
@@ -765,7 +865,7 @@
                                     HorizontalAlignment="Right" VerticalAlignment="Top" Click="BtnNetTest_Click"/>
                         </Grid>
                         <Grid Height="3" Margin="0,0,0,8" Background="{DynamicResource Line}">
-                            <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                            <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                                 <Border.RenderTransform><ScaleTransform x:Name="NetProgress" ScaleX="0"/></Border.RenderTransform>
                             </Border>
                         </Grid>
@@ -790,7 +890,7 @@
                                     HorizontalAlignment="Right" VerticalAlignment="Top" Click="BtnDrvScan_Click"/>
                         </Grid>
                         <Grid Height="3" Margin="0,0,0,8" Background="{DynamicResource Line}">
-                            <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                            <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                                 <Border.RenderTransform><ScaleTransform x:Name="DrvProgress" ScaleX="0"/></Border.RenderTransform>
                             </Border>
                         </Grid>
@@ -1387,7 +1487,7 @@
                                             </Grid>
                                             <!-- Barra: escala até 240 FPS -->
                                             <Grid Height="3" Margin="0,8,0,8" Background="{DynamicResource Line}">
-                                                <Border Background="{DynamicResource Fg}" HorizontalAlignment="Stretch" RenderTransformOrigin="0,0.5">
+                                                <Border Background="{DynamicResource Accent}" HorizontalAlignment="Stretch" RenderTransformOrigin="0,0.5">
                                                     <Border.RenderTransform>
                                                         <ScaleTransform ScaleX="{Binding Bar}"/>
                                                     </Border.RenderTransform>
@@ -1435,7 +1535,7 @@
                                         <Border Height="4" Background="{DynamicResource Line}" VerticalAlignment="Center"/>
                                         <Border Width="2" Height="10" Background="{DynamicResource Faint}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         <Canvas x:Name="BnBalanceCanvas" SizeChanged="BnBalanceCanvas_SizeChanged">
-                                            <Ellipse x:Name="BnBalanceDot" Width="14" Height="14" Fill="{DynamicResource Fg}" Canvas.Top="4"/>
+                                            <Ellipse x:Name="BnBalanceDot" Width="14" Height="14" Fill="{DynamicResource Accent}" Canvas.Top="4"/>
                                         </Canvas>
                                     </Grid>
                                     <Grid>
@@ -1627,7 +1727,7 @@
                                     </Viewbox>
                                 </Border>
                                 <Grid Height="3" Margin="0,12,0,8" Background="{DynamicResource Line}">
-                                    <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                                    <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                                         <Border.RenderTransform>
                                             <ScaleTransform x:Name="BenchProgress" ScaleX="0"/>
                                         </Border.RenderTransform>
@@ -1736,7 +1836,7 @@
                                     </StackPanel>
                                 </Grid>
                                 <Grid Height="3" Margin="0,14,0,8" Background="{DynamicResource Line}">
-                                    <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                                    <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                                         <Border.RenderTransform><ScaleTransform x:Name="GbProgress" ScaleX="0"/></Border.RenderTransform>
                                     </Border>
                                 </Grid>
@@ -1806,7 +1906,7 @@
                                             </StackPanel>
                                         </Grid>
                                         <Grid Height="3" Margin="0,14,0,8" Background="{DynamicResource Line}">
-                                            <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                                            <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                                                 <Border.RenderTransform><ScaleTransform x:Name="RtProgress" ScaleX="0"/></Border.RenderTransform>
                                             </Border>
                                         </Grid>
@@ -1894,7 +1994,7 @@
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Grid>
                                 <Grid Height="3" Margin="0,12,0,8" Background="{DynamicResource Line}">
-                                    <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                                    <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                                         <Border.RenderTransform><ScaleTransform x:Name="SimProgress" ScaleX="0"/></Border.RenderTransform>
                                     </Border>
                                 </Grid>
@@ -1963,7 +2063,7 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                                 <Grid Height="3" Margin="0,16,0,8" Background="{DynamicResource Line}">
-                                    <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                                    <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                                         <Border.RenderTransform><ScaleTransform x:Name="MemProgress" ScaleX="0"/></Border.RenderTransform>
                                     </Border>
                                 </Grid>
@@ -2018,7 +2118,7 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                                 <Grid Height="3" Margin="0,16,0,8" Background="{DynamicResource Line}">
-                                    <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                                    <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                                         <Border.RenderTransform><ScaleTransform x:Name="DiskProgress" ScaleX="0"/></Border.RenderTransform>
                                     </Border>
                                 </Grid>
@@ -2076,7 +2176,7 @@
                                         <TextBlock x:Name="OptRamText" FontFamily="{StaticResource Mono}" HorizontalAlignment="Right"/>
                                     </Grid>
                                     <Grid Height="6" Background="{DynamicResource Line}" Margin="0,0,0,12">
-                                        <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                                        <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                                             <Border.RenderTransform>
                                                 <ScaleTransform x:Name="OptRamBar" ScaleX="0"/>
                                             </Border.RenderTransform>
@@ -2253,7 +2353,7 @@
                                     HorizontalAlignment="Right" VerticalAlignment="Top" Click="BtnAppsInstall_Click"/>
                         </Grid>
                         <Grid Height="3" Margin="0,0,0,8" Background="{DynamicResource Line}">
-                            <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                            <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                                 <Border.RenderTransform><ScaleTransform x:Name="AppsProgress" ScaleX="0"/></Border.RenderTransform>
                             </Border>
                         </Grid>
@@ -2628,7 +2728,7 @@
                                         HorizontalAlignment="Left" Padding="24,10" Margin="0,14,0,0" Click="BtnOcCheck_Click"/>
 
                                 <Grid Height="4" Margin="0,12,0,8" Background="{DynamicResource Line}">
-                                    <Border Background="{DynamicResource Fg}" RenderTransformOrigin="0,0.5">
+                                    <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
                                         <Border.RenderTransform>
                                             <ScaleTransform x:Name="OcProgress" ScaleX="0"/>
                                         </Border.RenderTransform>
@@ -2878,7 +2978,7 @@
                             <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
                                 <TextBlock Text="TEMPERATURAS — ÚLTIMOS 5 MIN" Style="{StaticResource Label}" Margin="0"/>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Rectangle Width="14" Height="2" Fill="{DynamicResource Fg}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <Rectangle Width="14" Height="2" Fill="{DynamicResource Accent}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                     <TextBlock Text="CPU" Foreground="{DynamicResource Muted}" FontSize="11" Margin="0,0,16,0"/>
                                     <Rectangle Width="14" Height="2" Fill="{DynamicResource Muted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                     <TextBlock Text="GPU" Foreground="{DynamicResource Muted}" FontSize="11" Margin="0,0,16,0"/>

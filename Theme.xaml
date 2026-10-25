@@ -12,6 +12,10 @@
     <SolidColorBrush x:Key="Muted" Color="#8C8C8C"/>
     <SolidColorBrush x:Key="Faint" Color="#4A4A4A"/>
     <SolidColorBrush x:Key="Ink" Color="#000000"/>
+    <!-- Cor de destaque: o ThemeManager troca em tempo de execução. Padrão = preto e branco (visual original). -->
+    <SolidColorBrush x:Key="Accent" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="AccentInk" Color="#000000"/>
+    <SolidColorBrush x:Key="AccentSoft" Color="#33F5F5F5"/>
     <SolidColorBrush x:Key="ThumbBrush" Color="#2E2E2E"/>
     <SolidColorBrush x:Key="ThumbHover" Color="#6A6A6A"/>
     <SolidColorBrush x:Key="ThumbDrag" Color="#9A9A9A"/>
@@ -58,9 +62,9 @@
 
     <!-- ===== Botões ===== -->
     <Style x:Key="PrimaryButton" TargetType="Button">
-        <Setter Property="Background" Value="{DynamicResource Fg}"/>
-        <Setter Property="Foreground" Value="{DynamicResource Ink}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource Fg}"/>
+        <Setter Property="Background" Value="{DynamicResource Accent}"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentInk}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="FontSize" Value="13"/>
@@ -92,7 +96,7 @@
     <Style x:Key="OutlineButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource Fg}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource Fg}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}"/>
     </Style>
 
     <Style x:Key="CaptionButton" TargetType="Button">
@@ -148,7 +152,11 @@
                 <ControlTemplate TargetType="RadioButton">
                     <!-- "Pílula" arredondada no item selecionado, como no painel de referência -->
                     <Border x:Name="bg" Background="Transparent" Height="38" CornerRadius="12">
-                        <ContentPresenter Margin="14,0,10,0" VerticalAlignment="Center"/>
+                        <Grid>
+                            <Rectangle x:Name="bar" Width="3" Height="16" RadiusX="1.5" RadiusY="1.5" Margin="3,0,0,0"
+                                       HorizontalAlignment="Left" VerticalAlignment="Center" Fill="{DynamicResource Accent}" Visibility="Collapsed"/>
+                            <ContentPresenter Margin="14,0,10,0" VerticalAlignment="Center"/>
+                        </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -159,6 +167,7 @@
                             <Setter TargetName="bg" Property="Background" Value="{DynamicResource Hover}"/>
                             <Setter Property="Foreground" Value="{DynamicResource Fg}"/>
                             <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter TargetName="bar" Property="Visibility" Value="Visible"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -231,7 +240,7 @@
                 <ControlTemplate TargetType="RadioButton">
                     <Grid x:Name="bg" Background="Transparent" Height="44">
                         <ContentPresenter Margin="16,0" VerticalAlignment="Center"/>
-                        <Rectangle x:Name="line" Height="2" VerticalAlignment="Bottom" Margin="16,0" Fill="{DynamicResource Fg}" Visibility="Hidden"/>
+                        <Rectangle x:Name="line" Height="2" VerticalAlignment="Bottom" Margin="16,0" Fill="{DynamicResource Accent}" Visibility="Hidden"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -266,9 +275,9 @@
                             <Setter Property="Foreground" Value="{DynamicResource Fg}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="b" Property="Background" Value="{DynamicResource Fg}"/>
-                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource Fg}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource Ink}"/>
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource Accent}"/>
+                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource AccentInk}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="b" Property="Opacity" Value="0.35"/>
@@ -300,9 +309,9 @@
                             <Setter TargetName="track" Property="BorderBrush" Value="{DynamicResource Fg}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="track" Property="Background" Value="{DynamicResource Fg}"/>
-                            <Setter TargetName="track" Property="BorderBrush" Value="{DynamicResource Fg}"/>
-                            <Setter TargetName="knob" Property="Fill" Value="{DynamicResource Ink}"/>
+                            <Setter TargetName="track" Property="Background" Value="{DynamicResource Accent}"/>
+                            <Setter TargetName="track" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+                            <Setter TargetName="knob" Property="Fill" Value="{DynamicResource AccentInk}"/>
                             <Setter TargetName="knob" Property="HorizontalAlignment" Value="Right"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
@@ -321,7 +330,8 @@
         <Setter Property="BorderBrush" Value="{DynamicResource LineStrong}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CaretBrush" Value="{DynamicResource Fg}"/>
-        <Setter Property="SelectionBrush" Value="#666666"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource Accent}"/>
+        <Setter Property="SelectionOpacity" Value="0.45"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="Padding" Value="8,7"/>
         <Setter Property="Template">
@@ -341,7 +351,7 @@
                             <Setter TargetName="ph" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource Fg}"/>
+                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource Accent}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="b" Property="Opacity" Value="0.35"/>
@@ -359,7 +369,8 @@
         <Setter Property="BorderBrush" Value="{DynamicResource LineStrong}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CaretBrush" Value="{DynamicResource Fg}"/>
-        <Setter Property="SelectionBrush" Value="#666666"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource Accent}"/>
+        <Setter Property="SelectionOpacity" Value="0.45"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="Padding" Value="8,7"/>
         <Setter Property="Template">
@@ -371,7 +382,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource Fg}"/>
+                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource Accent}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -467,8 +478,8 @@
                             <Setter Property="Foreground" Value="{DynamicResource Fg}"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="b" Property="Background" Value="{DynamicResource Fg}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource Ink}"/>
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource Accent}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource AccentInk}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -542,7 +553,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="RepeatButton">
                     <Grid Background="Transparent">
-                        <Border Height="4" Background="{DynamicResource Fg}" VerticalAlignment="Center"/>
+                        <Border Height="4" Background="{DynamicResource Accent}" VerticalAlignment="Center"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -566,7 +577,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Thumb">
-                    <Border Background="{DynamicResource Fg}"/>
+                    <Border Background="{DynamicResource Accent}"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

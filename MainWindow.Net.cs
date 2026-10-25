@@ -74,14 +74,12 @@ public partial class MainWindow
         }
     }
 
-    // ================= Tema (escuro / claro) =================
+    // ================= Tema (modo + cor de destaque) =================
 
     private void Theme_Click(object sender, RoutedEventArgs e)
     {
-        ThemeManager.Apply(!ThemeManager.IsLight);
-        _settings.LightTheme = ThemeManager.IsLight;
-        try { _settings.Save(); } catch { }
-        UpdateThemeButton();
+        // Atalho rápido: alterna claro/escuro (a escolha fica salva). Cor de destaque e "usar o do sistema" ficam em Personalização.
+        ThemeManager.SetMode(ThemeManager.IsLight ? ThemeMode.Dark : ThemeMode.Light);
     }
 
     /// <summary>Mostra o ícone do modo para onde o clique leva (sol = ir para o claro, lua = ir para o escuro) e troca o logo.</summary>

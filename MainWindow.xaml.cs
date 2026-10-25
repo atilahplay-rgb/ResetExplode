@@ -80,7 +80,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        ThemeManager.Apply(_settings.LightTheme);
+        ThemeManager.Initialize(_settings);
+        ThemeManager.Changed += OnThemeChanged;
         UpdateThemeButton();
         ShowPage("PageDash");
 
@@ -280,12 +281,13 @@ public partial class MainWindow : Window
             case "PageMakerPorts": ScanUsb(); break;
             case "PageMakerDrv": InitMakerDrivers(); break;
             case "PageOptimize": InitOptimize(); break;
+            case "PageAppearance": InitAppearance(); break;
         }
     }
 
     private void ShowPage(string name)
     {
-        foreach (var p in new FrameworkElement[] { PageDash, PageSystem, PageSensors, PageGpu, PageGames, PageBottleneck, PageOverlay, PageBench, PageOptimize, PageOc, PageInteg, PageLauncher, PageDriver, PageStartup, PageApps, PageMakerPorts, PageMakerDrv, PageDisks, PageEnergy, PageNet, PageStress })
+        foreach (var p in new FrameworkElement[] { PageDash, PageSystem, PageSensors, PageGpu, PageGames, PageBottleneck, PageOverlay, PageBench, PageOptimize, PageOc, PageInteg, PageAppearance, PageLauncher, PageDriver, PageStartup, PageApps, PageMakerPorts, PageMakerDrv, PageDisks, PageEnergy, PageNet, PageStress })
             p.Visibility = p.Name == name ? Visibility.Visible : Visibility.Collapsed;
     }
 

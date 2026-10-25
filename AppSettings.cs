@@ -68,7 +68,12 @@ public sealed class AppSettings
     public List<CustomGame> CustomGames { get; set; } = new();
 
     // Aparência
+    /// <summary>Legado (versões antigas só tinham claro/escuro); continua sendo gravado para manter compatibilidade.</summary>
     public bool LightTheme { get; set; }
+    /// <summary>"dark", "light" ou "system" (acompanha o Windows). Vazio = arquivo antigo, migra de LightTheme.</summary>
+    public string ThemeMode { get; set; } = "";
+    /// <summary>Cor de destaque: "default" (preto e branco), "system" (cor do Windows) ou "#RRGGBB".</summary>
+    public string AccentColor { get; set; } = "default";
 
     // Overlay
     public string OverlayCorner { get; set; } = "TL";

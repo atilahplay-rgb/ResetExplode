@@ -212,7 +212,7 @@ public partial class MainWindow
         double X(int i) => left + plotW * i / Math.Max(1, range - 1) + plotW * (range - data.Count) / Math.Max(1, range - 1);
         double Y(double v) => top + plotH * (1 - (Math.Clamp(v, yMin, yMax) - yMin) / (yMax - yMin));
 
-        var fg = (SolidColorBrush)FindResource("Fg");
+        var fg = (SolidColorBrush)FindResource("Accent"); // linha da CPU na cor de destaque
         var faint = (Brush)FindResource("Faint");
         var mono = (FontFamily)FindResource("Mono");
 
@@ -292,7 +292,7 @@ public partial class MainWindow
         DashMemSub.Text = total > 0 ? $"de RAM em uso · {total / 1073741824.0:0} GB instalados" : "";
 
         Brush fg = (Brush)FindResource("Fg"), muted = (Brush)FindResource("Muted"), faint = (Brush)FindResource("Faint");
-        var rings = new List<(double Frac, Brush Brush, string Label)> { (ram, fg, "RAM") };
+        var rings = new List<(double Frac, Brush Brush, string Label)> { (ram, (Brush)FindResource("Accent"), "RAM") };
         if (vram is double v) rings.Add((v, muted, "VRAM"));
         if (c0 != null) rings.Add((c0.UsedFraction, faint, $"Disco {c0.Letter}"));
 

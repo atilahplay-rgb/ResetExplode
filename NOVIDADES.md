@@ -1,5 +1,13 @@
 ## Novidades da v0.16
 
+**Nova página · Personalização** (menu lateral, abaixo de RESET MAKER)
+- **Modo**: Escuro, Claro ou **Usar o do sistema**, que acompanha o modo do Windows na hora, sem reiniciar.
+- **Cor de destaque** no estilo do Windows 11: *Preto e branco* (o visual de sempre), *Automática* (a cor de destaque do
+  Windows, e muda junto se você trocar lá) ou *Manual*, com as 48 cores do Windows, controles R/G/B e código #RRGGBB.
+- A cor aparece em botões, abas, chips, interruptores, controles deslizantes, barras de progresso, anéis e no gráfico do painel.
+  Se a cor ficar apagada demais sobre o fundo, o app a ajusta um pouco para manter a leitura.
+- O botão de sol/lua da barra de título continua alternando claro/escuro. **Restaurar padrão** volta ao visual original.
+
 **Nova página · RESET FERRAMENTAS › Inicialização**
 - Lista os programas que abrem junto com o Windows: chaves Run do registro (usuário, todos os usuários, 32 e 64 bits)
   e pastas Inicializar, com descrição, fabricante e aviso quando o arquivo do programa não existe mais.
