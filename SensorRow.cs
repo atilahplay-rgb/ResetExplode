@@ -29,10 +29,11 @@ public class SensorRow : INotifyPropertyChanged
 
     public void Update(float? value, float? min, float? max)
     {
+        bool v = _value != value, mn = _min != min, mx = _max != max;
         _value = value; _min = min; _max = max;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Min)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Max)));
+        if (v) PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+        if (mn) PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Min)));
+        if (mx) PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Max)));
     }
 
     private string Format(float? v)

@@ -15,6 +15,7 @@ public partial class MainWindow : Window
 {
     private readonly SensorMonitor _monitor;
     private readonly DispatcherTimer _timer;
+    private bool _tickBusy; // evita ciclos empilhados se a leitura dos sensores demorar
     private readonly ICollectionView _view;
     private string? _category;   // filtro por chip (null = todos)
     private string _search = ""; // filtro por texto
@@ -103,20 +104,27 @@ public partial class MainWindow : Window
         Loaded += async (_, _) => await LoadHardwareAsync();
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        _timer.Tick += (_, _) =>
+        _timer.Tick += async (_, _) =>
         {
             // Durante a cena de GPU as leituras de sensores (NVML/driver) ficam pausadas: cada consulta trava o driver
             // por um instante e aparecia como engasgo no 1% low do benchmark.
-            if (_gpuBenchActive) return;
-            _monitor.Refresh();
-            if (_monitor.IsOpen) StatusText.Text = $"{_monitor.Rows.Count} sensores · atualizado {DateTime.Now:HH:mm:ss}";
-            UpdateStressPanel();
-            UpdateGpuLive();
-            UpdateCpuSensorWarning();
-            CollectDashSample();
-            UpdateBottleneck();
-            if (PageBench.IsVisible) UpdateBenchLive();
-            if (PageOptimize.IsVisible) UpdateRamStatus();
+            if (_gpuBenchActive || _tickBusy) return;
+            _tickBusy = true;
+            try
+            {
+                // A leitura dos sensores roda em outra thread: na janela ela travava a rolagem a cada segundo.
+                await _monitor.RefreshAsync();
+                if (_gpuBenchActive) return;
+                if (_monitor.IsOpen) StatusText.Text = $"{_monitor.Rows.Count} sensores · atualizado {DateTime.Now:HH:mm:ss}";
+                UpdateStressPanel();
+                UpdateGpuLive();
+                UpdateCpuSensorWarning();
+                CollectDashSample();
+                UpdateBottleneck();
+                if (PageBench.IsVisible) UpdateBenchLive();
+                if (PageOptimize.IsVisible) UpdateRamStatus();
+            }
+            finally { _tickBusy = false; }
         };
         _timer.Start();
 
@@ -160,7 +168,7 @@ public partial class MainWindow : Window
         {
             try { await _monitor.OpenAsync(); }
             catch (Exception ex) { StatusText.Text = $"Sensores indisponíveis: {ex.Message}"; return; }
-            _monitor.Refresh();
+            await _monitor.RefreshAsync();
             UpdateCpuSensorWarning();
             AddChip("Todos", null, isChecked: true);
             foreach (var c in _monitor.Rows.Select(r => r.Category).Distinct().OrderBy(x => x))
