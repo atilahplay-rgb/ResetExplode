@@ -35,31 +35,14 @@ public sealed class Tweak : INotifyPropertyChanged
 
 public static class WindowsTweaks
 {
-    private const string HighPerformance = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c";
-
     public static List<Tweak> All() => new()
     {
+        // O plano de energia agora tem seletor próprio (PowerPlans / MainWindow.Power.cs); este item fica só para
+        // "Restaurar originais" devolver o plano que estava ativo antes da primeira troca. Não aparece na lista.
         new Tweak
         {
-            Id = "power", Title = "Plano de energia: Alto desempenho",
-            Description = "Mantém a CPU pronta para subir o clock na hora, sem economia agressiva de energia.",
-            Effect = "Menos engasgos e 1% low melhor em alguns jogos. Em notebooks gasta mais bateria.",
-            Read = () => ActiveScheme()?.Equals(HighPerformance, StringComparison.OrdinalIgnoreCase),
-            Write = (on, s) =>
-            {
-                if (!s.TweakBackup.ContainsKey("power")) s.TweakBackup["power"] = ActiveScheme();
-                if (on)
-                {
-                    // Alguns PCs vêm sem o plano listado: duplicar o modelo padrão o recria com o mesmo GUID.
-                    if (!PowerCfg("/list").Contains(HighPerformance, StringComparison.OrdinalIgnoreCase))
-                        PowerCfg($"-duplicatescheme {HighPerformance} {HighPerformance}");
-                    PowerCfg($"/setactive {HighPerformance}");
-                }
-                else if (s.TweakBackup["power"] is string prev && !prev.Equals(HighPerformance, StringComparison.OrdinalIgnoreCase))
-                    PowerCfg($"/setactive {prev}");
-                else PowerCfg("/setactive 381b4222-f694-41f0-9685-ff5bb260df2e"); // Equilibrado
-            },
-            Restore = s => { if (s.TweakBackup.GetValueOrDefault("power") is string prev) PowerCfg($"/setactive {prev}"); },
+            Id = "power", Title = "Plano de energia",
+            Restore = s => { if (s.TweakBackup.GetValueOrDefault("power") is string prev) PowerPlans.SetActive(prev); },
         },
         RegTweak("gamemode", "Modo de Jogo",
             "Dá prioridade ao jogo e evita que o Windows Update instale ou reinicie durante a partida.",
@@ -207,26 +190,6 @@ public static class WindowsTweaks
         // Aplica na hora, sem precisar sair da conta.
         var p = v.Select(int.Parse).ToArray();
         SystemParametersInfo(0x0004 /* SPI_SETMOUSE */, 0, p, 0x01 | 0x02);
-    }
-
-    // ------------------------------------------------------------------ plano de energia
-
-    private static string? ActiveScheme()
-    {
-        var m = System.Text.RegularExpressions.Regex.Match(PowerCfg("/getactivescheme"), @"[0-9a-fA-F\-]{36}");
-        return m.Success ? m.Value.ToLowerInvariant() : null;
-    }
-
-    private static string PowerCfg(string args)
-    {
-        var psi = new ProcessStartInfo("powercfg.exe", args)
-        {
-            RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
-        };
-        using var p = Process.Start(psi)!;
-        string output = p.StandardOutput.ReadToEnd();
-        p.WaitForExit(5000);
-        return output;
     }
 
     [DllImport("user32.dll")] private static extern bool SystemParametersInfo(uint action, uint param, int[] data, uint winIni);

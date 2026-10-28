@@ -842,8 +842,9 @@ public partial class MainWindow : Window
             _optInit = true;
             foreach (var t in _tweaks)
                 try { t.Refresh(); } catch (Exception ex) { t.Status = $"Não foi possível ler: {ex.Message}"; }
-            OptTweaks.ItemsSource = _tweaks;
+            OptTweaks.ItemsSource = _tweaks.Where(t => t.Id != "power").ToList(); // o plano de energia tem seletor próprio
         }
+        RefreshPowerPlans();
         RefreshApps();
         UpdateRamStatus();
     }
@@ -1035,6 +1036,7 @@ public partial class MainWindow : Window
         bool restart = _tweaks.Any(t => t.NeedsRestart && _settings.TweakBackup.ContainsKey(t.Id));
         WindowsTweaks.RestoreAll(_tweaks, _settings);
         foreach (var t in _tweaks) { t.Refresh(); t.Status = "Restaurado."; }
+        RefreshPowerPlans();
         if (restart) MessageBox.Show("Alguns ajustes só voltam ao original depois de reiniciar o PC.", "RESET OTIMIZA");
     }
 

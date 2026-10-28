@@ -2231,6 +2231,41 @@
                                         O interruptor mostra o estado atual e aplica na hora. O valor original é guardado na primeira
                                         alteração. Não mexemos em segurança (Defender, Integridade de Memória, UAC, Windows Update).
                                     </TextBlock>
+                                    <!-- Plano de energia -->
+                                    <StackPanel Margin="0,0,0,12">
+                                        <TextBlock Text="Plano de energia" FontWeight="SemiBold"/>
+                                        <TextBlock Foreground="{DynamicResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,3,0,8">
+                                            Muda o plano do Windows. Fica valendo com o app fechado e depois de reiniciar o PC; só volta ao anterior
+                                            se você clicar em RESTAURAR ORIGINAIS.
+                                        </TextBlock>
+                                        <ItemsControl x:Name="PowerPlanList">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <RadioButton Style="{StaticResource Chip}" GroupName="PowerPlan"
+                                                                 IsChecked="{Binding IsActive, Mode=OneWay}" Tag="{Binding}" Click="PowerPlan_Click">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Grid Width="16" Height="16" Margin="0,0,7,0" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                                                                <Grid.RenderTransform>
+                                                                    <TransformGroup>
+                                                                        <ScaleTransform/>
+                                                                        <RotateTransform/>
+                                                                        <TranslateTransform/>
+                                                                    </TransformGroup>
+                                                                </Grid.RenderTransform>
+                                                                <Path Data="{Binding IconData}"
+                                                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
+                                                            </Grid>
+                                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </RadioButton>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <TextBlock x:Name="PowerPlanStatus" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
                                     <ItemsControl x:Name="OptTweaks">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
