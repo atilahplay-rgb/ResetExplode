@@ -40,6 +40,7 @@ public partial class MainWindow
                 // guarda o plano de antes só na primeira alteração, para "Restaurar originais"
                 if (!_settings.TweakBackup.ContainsKey("power")) _settings.TweakBackup["power"] = r.Previous;
                 _settings.Save();
+                if (r.ActiveGuid != null) plan.Guid = r.ActiveGuid; // o plano pode ter sido criado com outro GUID
                 foreach (var p in _powerItems) p.IsActive = p.Guid == plan.Guid; // atualiza no lugar, sem recriar os botões
             }
             else PowerPlanStatus.Text = r.Message; // só erros aparecem
