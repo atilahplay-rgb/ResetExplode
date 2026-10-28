@@ -64,11 +64,21 @@ public partial class MainWindow
 
     private static void PlayPlanAnimation(RadioButton chip, string kind)
     {
-        if (chip.Content is not StackPanel { Children.Count: > 0 } sp || sp.Children[0] is not Grid icon) return;
-        if (icon.RenderTransform is not TransformGroup { Children.Count: 3 } g) return;
-        var scale = (ScaleTransform)g.Children[0];
-        var rot = (RotateTransform)g.Children[1];
-        var move = (TranslateTransform)g.Children[2];
+        try
+        {
+            if (chip.Content is not StackPanel { Children.Count: > 0 } sp || sp.Children[0] is not Grid icon) return;
+
+            // Os transforms são criados aqui (não no XAML): objetos declarados dentro de um template ficam congelados
+            // e o WPF não deixa animá-los.
+            var g = icon.RenderTransform as TransformGroup;
+            if (g == null || g.IsFrozen || g.Children.Count != 3)
+            {
+                g = new TransformGroup { Children = { new ScaleTransform(), new RotateTransform(), new TranslateTransform() } };
+                icon.RenderTransform = g;
+            }
+            var scale = (ScaleTransform)g.Children[0];
+            var rot = (RotateTransform)g.Children[1];
+            var move = (TranslateTransform)g.Children[2];
 
         void Scale(DoubleAnimationUsingKeyFrames a)
         {
@@ -99,5 +109,7 @@ public partial class MainWindow
                 Scale(Seq((0, 1, null), (180, 1.7, EaseOut), (500, 1, null)));
                 break;
         }
+        }
+        catch { /* a animação é só enfeite: nunca pode derrubar o app */ }
     }
 }
