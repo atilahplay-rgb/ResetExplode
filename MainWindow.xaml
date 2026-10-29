@@ -349,6 +349,12 @@
                                     <TextBlock Text="Otimização" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </RadioButton>
+                            <RadioButton x:Name="NavProcesses" Style="{StaticResource NavItem}" Tag="PageProcesses" Checked="Nav_Checked">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE9D9;" FontFamily="{StaticResource Icons}" FontSize="14" Width="28" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Processos" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </RadioButton>
                             <RadioButton x:Name="NavStartup" Style="{StaticResource NavItem}" Tag="PageStartup" Checked="Nav_Checked">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE823;" FontFamily="{StaticResource Icons}" FontSize="14" Width="28" VerticalAlignment="Center"/>
@@ -2292,6 +2298,62 @@
                 </ScrollViewer>
 
                 <!-- ===== INICIALIZAÇÃO (programas que abrem com o Windows) ===== -->
+                <!-- ===== PROCESSOS ===== -->
+                <Grid x:Name="PageProcesses" Margin="36,30,36,30" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Margin="0,0,0,16">
+                        <StackPanel Margin="0,0,290,0">
+                            <TextBlock Text="PROCESSOS" Style="{StaticResource H1}"/>
+                            <TextBlock x:Name="ProcSummary" Text="Lendo processos…" Style="{StaticResource Sub}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <TextBox x:Name="ProcSearch" Width="260" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                 Tag="Buscar por nome ou PID…" TextChanged="ProcSearch_Changed"/>
+                    </Grid>
+
+                    <Border Grid.Row="1" Style="{StaticResource CardBorder}" Margin="0,0,0,12" Padding="16,12">
+                        <WrapPanel>
+                            <Button x:Name="BtnProcKill" Style="{StaticResource PrimaryButton}" Content="FINALIZAR TAREFA" Padding="16,8" Margin="0,0,8,0"
+                                    IsEnabled="False" Click="BtnProcKill_Click" ToolTip="Encerra o programa e os processos filhos (Delete)"/>
+                            <Button x:Name="BtnProcEco" Style="{StaticResource OutlineButton}" Content="MODO DE EFICIÊNCIA" Padding="14,8" Margin="0,0,8,0"
+                                    IsEnabled="False" Click="BtnProcEco_Click"
+                                    ToolTip="Prioridade baixa + economia de energia, sem fechar o programa (como no Windows 11)"/>
+                            <Button x:Name="BtnProcSuspend" Style="{StaticResource OutlineButton}" Content="SUSPENDER" Padding="14,8" Margin="0,0,8,0"
+                                    IsEnabled="False" Click="BtnProcSuspend_Click" ToolTip="Congela o programa (0% de CPU) sem fechar; RETOMAR devolve"/>
+                            <Button x:Name="BtnProcPriority" Style="{StaticResource OutlineButton}" Content="PRIORIDADE ▾" Padding="14,8" Margin="0,0,8,0"
+                                    IsEnabled="False" Click="BtnProcPriority_Click"/>
+                            <Button Style="{StaticResource OutlineButton}" Content="ATUALIZAR" Padding="14,8" Margin="0,0,18,0" Click="BtnProcRefresh_Click"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <CheckBox x:Name="ProcShowSystem" Checked="ProcShowSystem_Changed" Unchecked="ProcShowSystem_Changed" VerticalAlignment="Center"/>
+                                <TextBlock Text="Mostrar processos do Windows" Foreground="{DynamicResource Muted}" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </WrapPanel>
+                    </Border>
+
+                    <Border Grid.Row="2" Style="{StaticResource CardBorder}" Padding="6,14,6,6">
+                        <DataGrid x:Name="ProcGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
+                                  CanUserResizeColumns="False" EnableRowVirtualization="True" KeyDown="ProcGrid_KeyDown"
+                                  SelectionChanged="ProcGrid_SelectionChanged" VirtualizingPanel.ScrollUnit="Pixel">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="NOME" Binding="{Binding Title}" SortMemberPath="Title" Width="*"/>
+                                <DataGridTextColumn Header="QTD." Binding="{Binding CountText}" SortMemberPath="Count" Width="60" ElementStyle="{StaticResource MutedMonoCell}"/>
+                                <DataGridTextColumn Header="ESTADO" Binding="{Binding State}" SortMemberPath="State" Width="130" ElementStyle="{StaticResource MutedCell}"/>
+                                <DataGridTextColumn Header="CPU" Binding="{Binding CpuText}" SortMemberPath="Cpu" Width="90" ElementStyle="{StaticResource MonoCell}"/>
+                                <DataGridTextColumn Header="MEMÓRIA" Binding="{Binding MemoryText}" SortMemberPath="MemoryBytes" Width="110" ElementStyle="{StaticResource MonoCell}"/>
+                                <DataGridTextColumn Header="E/S (DISCO)" Binding="{Binding DiskText}" SortMemberPath="DiskBps" Width="120" ElementStyle="{StaticResource MonoCell}"/>
+                                <DataGridTextColumn Header="PRIORIDADE" Binding="{Binding Priority}" SortMemberPath="Priority" Width="140" ElementStyle="{StaticResource MutedCell}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <TextBlock x:Name="ProcResult" Grid.Row="3" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                </Grid>
+
                 <ScrollViewer x:Name="PageStartup" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="36,30,36,30">
                         <Grid Margin="0,0,0,20">

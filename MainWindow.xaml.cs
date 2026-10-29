@@ -137,7 +137,7 @@ public partial class MainWindow : Window
         };
         Closed += (_, _) =>
         {
-            _timer.Stop(); _overlayTimer?.Stop();
+            _timer.Stop(); _overlayTimer?.Stop(); _procTimer?.Stop(); _pm.ResumeAll();
             _stress.Stop(); _burn.Stop(); _benchCts?.Cancel();
             _overlay?.Close();
             _toast?.Close();
@@ -285,6 +285,7 @@ public partial class MainWindow : Window
             case "PageLauncher": InitLauncher(); break;
             case "PageDriver": InitDriver(); break;
             case "PageStartup": ScanStartup(); break;
+            case "PageProcesses": InitProcesses(); break;
             case "PageApps": InitApps(); break;
             case "PageMakerPorts": ScanUsb(); break;
             case "PageMakerDrv": InitMakerDrivers(); break;
@@ -294,7 +295,7 @@ public partial class MainWindow : Window
 
     private void ShowPage(string name)
     {
-        foreach (var p in new FrameworkElement[] { PageDash, PageSystem, PageSensors, PageGpu, PageGames, PageBottleneck, PageOverlay, PageBench, PageOptimize, PageOc, PageInteg, PageLauncher, PageDriver, PageStartup, PageApps, PageMakerPorts, PageMakerDrv, PageDisks, PageEnergy, PageNet, PageStress })
+        foreach (var p in new FrameworkElement[] { PageDash, PageSystem, PageSensors, PageGpu, PageGames, PageBottleneck, PageOverlay, PageBench, PageOptimize, PageOc, PageInteg, PageLauncher, PageDriver, PageStartup, PageProcesses, PageApps, PageMakerPorts, PageMakerDrv, PageDisks, PageEnergy, PageNet, PageStress })
             p.Visibility = p.Name == name ? Visibility.Visible : Visibility.Collapsed;
     }
 
