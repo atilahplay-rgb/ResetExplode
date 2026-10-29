@@ -136,7 +136,7 @@ public partial class MainWindow : Window
         };
         Closed += (_, _) =>
         {
-            _timer.Stop(); _overlayTimer?.Stop(); _procTimer?.Stop(); _pm.ResumeAll();
+            _timer.Stop(); _overlayTimer?.Stop(); _procTimer?.Stop(); _pm.Dispose();
             _stress.Stop(); _burn.Stop(); _benchCts?.Cancel();
             _overlay?.Close();
             _toast?.Close();

@@ -2,6 +2,7 @@
 
 **Nova página · RESET FERRAMENTAS › Processos** (estilo Gerenciador de Tarefas do Windows 11)
 - Tabela ao vivo (1 s, igual ao Gerenciador de Tarefas; dá para pôr em Alta, Baixa ou Pausar) com nome, quantidade, estado, CPU, memória, E/S de disco e prioridade; ordena ao clicar no cabeçalho e tem busca por nome ou PID.
+- Coluna **Rede** (Mbps por programa, via ETW; precisa de administrador) e filtro **Ordenar por** Nome, CPU, Memória, Disco ou Rede, com o total ao vivo em cada opção. Clicar no cabeçalho também vale.
 - **Finalizar tarefa** (ou tecla Delete): encerra o programa e os processos filhos, com confirmação.
 - **Modo de eficiência**: prioridade baixa + economia de energia sem fechar o programa. **Suspender/Retomar**: congela sem fechar. **Prioridade** por processo.
 - A lista "Programas para fechar" saiu da Otimização: o botão RESET OTIMIZA foi removido; quem fecha, congela ou põe programas em eficiência é a página Processos.

@@ -1,6 +1,9 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
+using Microsoft.Diagnostics.Tracing.Parsers;
+using Microsoft.Diagnostics.Tracing.Session;
 
 namespace ResetExplode;
 
@@ -16,7 +19,7 @@ public sealed class ProcRow : INotifyPropertyChanged
     private string _title = "";
     private int _count;
     private double _cpu;
-    private long _mem, _disk;
+    private long _mem, _disk, _net;
     private string _state = "";
     private string _priority = "";
 
@@ -25,12 +28,14 @@ public sealed class ProcRow : INotifyPropertyChanged
     public double Cpu { get => _cpu; set { if (Set(ref _cpu, value, nameof(Cpu))) Raise(nameof(CpuText)); } }
     public long MemoryBytes { get => _mem; set { if (Set(ref _mem, value, nameof(MemoryBytes))) Raise(nameof(MemoryText)); } }
     public long DiskBps { get => _disk; set { if (Set(ref _disk, value, nameof(DiskBps))) Raise(nameof(DiskText)); } }
+    public long NetBps { get => _net; set { if (Set(ref _net, value, nameof(NetBps))) Raise(nameof(NetText)); } }
     public string State { get => _state; set => Set(ref _state, value, nameof(State)); }
     public string Priority { get => _priority; set => Set(ref _priority, value, nameof(Priority)); }
 
     public string CountText => Count > 1 ? $"{Count}" : "";
     public string CpuText => Cpu < 0.05 ? "0 %" : $"{Cpu:N1} %";
     public string MemoryText => MemoryBytes >= 1_073_741_824 ? $"{MemoryBytes / 1073741824.0:N2} GB" : $"{MemoryBytes / 1048576.0:N0} MB";
+    public string NetText => NetBps < 1 ? "0 Mbps" : NetBps * 8 / 1e6 < 0.05 ? "0 Mbps" : $"{NetBps * 8 / 1e6:N1} Mbps";
     public string DiskText => DiskBps < 1024 ? "0 MB/s" : DiskBps < 10_485_760 ? $"{DiskBps / 1048576.0:N2} MB/s" : $"{DiskBps / 1048576.0:N1} MB/s";
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -66,7 +71,8 @@ public sealed class ProcessManager
 
     private readonly int _cores = Environment.ProcessorCount;
     private readonly int _session = Process.GetCurrentProcess().SessionId;
-    private readonly Dictionary<int, (TimeSpan Cpu, ulong Io)> _prev = new();
+    private readonly Dictionary<int, (TimeSpan Cpu, ulong Io, long Net)> _prev = new();
+    private readonly NetTracker _net = new();
     private readonly HashSet<int> _suspended = new();
     private readonly Dictionary<string, string> _titleCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _gate = new();
@@ -74,7 +80,13 @@ public sealed class ProcessManager
 
     public bool ShowSystem { get; set; }
 
-    public sealed record Sample(string Name, string Key, List<int> Pids, string Title, double Cpu, long Mem, long Disk,
+    /// <summary>Liga a leitura de rede por processo (ETW). Precisa de administrador; se falhar, a coluna Rede fica sem dados.</summary>
+    public void StartNet() => _net.Start();
+    public bool NetAvailable => _net.Running;
+    public string? NetError => _net.Error;
+    public void Dispose() { ResumeAll(); _net.Dispose(); }
+
+    public sealed record Sample(string Name, string Key, List<int> Pids, string Title, double Cpu, long Mem, long Disk, long Net,
                                 bool Locked, bool Critical, bool AnyWindow, string State, string Priority);
 
     /// <summary>Lê todos os processos e calcula CPU e disco pela diferença desde a leitura anterior. Rodar fora da thread da janela.</summary>
@@ -82,8 +94,8 @@ public sealed class ProcessManager
     {
         var now = DateTime.UtcNow;
         double secs = _prevTime == DateTime.MinValue ? 0 : (now - _prevTime).TotalSeconds;
-        var nextPrev = new Dictionary<int, (TimeSpan, ulong)>();
-        var groups = new Dictionary<string, List<(Process P, double Cpu, long Disk)>>(StringComparer.OrdinalIgnoreCase);
+        var nextPrev = new Dictionary<int, (TimeSpan, ulong, long)>();
+        var groups = new Dictionary<string, List<(Process P, double Cpu, long Disk, long Net)>>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var p in Process.GetProcesses())
         {
@@ -97,16 +109,18 @@ public sealed class ProcessManager
                 TimeSpan cpuTime = TimeSpan.Zero; ulong io = 0;
                 try { cpuTime = p.TotalProcessorTime; } catch { }
                 try { io = ReadIo(p); } catch { }
-                nextPrev[p.Id] = (cpuTime, io);
+                long netTotal = _net.Total(p.Id);
+                nextPrev[p.Id] = (cpuTime, io, netTotal);
 
-                double cpu = 0; long disk = 0;
+                double cpu = 0; long disk = 0, net = 0;
                 if (secs > 0 && _prev.TryGetValue(p.Id, out var old))
                 {
                     cpu = Math.Max(0, (cpuTime - old.Cpu).TotalSeconds / secs / _cores * 100);
                     disk = io >= old.Io ? (long)((io - old.Io) / secs) : 0;
+                    net = netTotal >= old.Net ? (long)((netTotal - old.Net) / secs) : 0;
                 }
                 if (!groups.TryGetValue(name, out var list)) groups[name] = list = new();
-                list.Add((p, cpu, disk));
+                list.Add((p, cpu, disk, net));
             }
             catch { p.Dispose(); }
         }
@@ -120,11 +134,11 @@ public sealed class ProcessManager
         var result = new List<Sample>(groups.Count);
         foreach (var (name, procs) in groups)
         {
-            long mem = 0; double cpu = 0; long disk = 0; bool window = false;
+            long mem = 0; double cpu = 0; long disk = 0, net = 0; bool window = false;
             var pids = new List<int>(procs.Count);
-            foreach (var (p, c, d) in procs)
+            foreach (var (p, c, d, n) in procs)
             {
-                pids.Add(p.Id); cpu += c; disk += d;
+                pids.Add(p.Id); cpu += c; disk += d; net += n;
                 try { mem += p.WorkingSet64; } catch { }
                 if (!window) try { window = p.MainWindowHandle != IntPtr.Zero; } catch { }
             }
@@ -141,7 +155,7 @@ public sealed class ProcessManager
             bool allSusp = pids.All(susp.Contains);
             bool anyEco = false, allEco = true;
             string prio = "";
-            foreach (var (p, _, _) in procs)
+            foreach (var (p, _, _, _) in procs)
             {
                 bool eco = IsEfficiency(p.Id);
                 anyEco |= eco; allEco &= eco;
@@ -149,9 +163,9 @@ public sealed class ProcessManager
             try { prio = PriorityName(procs[0].P.PriorityClass); } catch { }
             string state = allSusp ? "Suspenso" : allEco && anyEco ? "Eficiência" : anyEco ? "Eficiência (parte)" : "";
 
-            result.Add(new Sample(name, name.ToLowerInvariant(), pids, title, cpu, mem, disk,
+            result.Add(new Sample(name, name.ToLowerInvariant(), pids, title, cpu, mem, disk, net,
                 Locked.Contains(name), SystemLike.Contains(name), window, state, prio));
-            foreach (var (p, _, _) in procs) p.Dispose();
+            foreach (var (p, _, _, _) in procs) p.Dispose();
         }
         return result;
     }
@@ -320,4 +334,58 @@ public sealed class ProcessManager
     private static extern bool GetProcessInformation(IntPtr h, int infoClass, ref PROCESS_POWER_THROTTLING_STATE info, int size);
     [DllImport("ntdll.dll")] private static extern int NtSuspendProcess(IntPtr h);
     [DllImport("ntdll.dll")] private static extern int NtResumeProcess(IntPtr h);
+}
+
+/// <summary>Bytes de rede por processo, contados pelos eventos TCP/UDP do kernel (ETW), como o Gerenciador de Tarefas faz.</summary>
+internal sealed class NetTracker : IDisposable
+{
+    private const string SessionName = "ResetExplode-Net";
+    private readonly ConcurrentDictionary<int, long> _bytes = new();
+    private TraceEventSession? _session;
+    private Thread? _thread;
+
+    public bool Running => _thread?.IsAlive == true;
+    public string? Error { get; private set; }
+
+    public long Total(int pid) => _bytes.TryGetValue(pid, out var v) ? v : 0;
+    private void Add(int pid, int size) => _bytes.AddOrUpdate(pid, size, (_, old) => old + size);
+
+    public void Start()
+    {
+        if (Running) return;
+        try
+        {
+            _session = new TraceEventSession(SessionName, TraceEventSessionOptions.Create) { StopOnDispose = true };
+            _session.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
+            var k = _session.Source.Kernel;
+            k.TcpIpSend += e => Add(e.ProcessID, e.size);
+            k.TcpIpRecv += e => Add(e.ProcessID, e.size);
+            k.UdpIpSend += e => Add(e.ProcessID, e.size);
+            k.UdpIpRecv += e => Add(e.ProcessID, e.size);
+            k.TcpIpSendIPV6 += e => Add(e.ProcessID, e.size);
+            k.TcpIpRecvIPV6 += e => Add(e.ProcessID, e.size);
+            k.UdpIpSendIPV6 += e => Add(e.ProcessID, e.size);
+            k.UdpIpRecvIPV6 += e => Add(e.ProcessID, e.size);
+            _thread = new Thread(() =>
+            {
+                try { _session.Source.Process(); }
+                catch (Exception ex) { Error = ex.Message; }
+            }) { IsBackground = true, Name = "ETW rede" };
+            _thread.Start();
+            Error = null;
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+            _session?.Dispose();
+            _session = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        try { _session?.Source.StopProcessing(); } catch { }
+        _session?.Dispose();
+        _session = null;
+    }
 }

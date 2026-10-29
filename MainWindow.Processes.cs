@@ -48,6 +48,7 @@ public partial class MainWindow
             _procTimer = new DispatcherTimer(ProcIntervals[_procSpeed], DispatcherPriority.Normal,
                 (_, _) => { if (PageProcesses.IsVisible) RefreshProcesses(); }, Dispatcher);
         }
+        _pm.StartNet();
         if (_procSpeed != 3) _procTimer!.Start();
         RefreshProcesses();
     }
@@ -70,7 +71,7 @@ public partial class MainWindow
             var samples = await Task.Run(() => _pm.Read());
 
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            double totalCpu = 0; int pidCount = 0;
+            double totalCpu = 0; long totalDisk = 0, totalNet = 0; int pidCount = 0;
             foreach (var s in samples)
             {
                 seen.Add(s.Key);
@@ -83,7 +84,7 @@ public partial class MainWindow
                     _procRows.Add(row);
                 }
                 else UpdateRow(row, s);
-                totalCpu += s.Cpu; pidCount += s.Pids.Count;
+                totalCpu += s.Cpu; totalDisk += s.Disk; totalNet += s.Net; pidCount += s.Pids.Count;
             }
             foreach (var gone in _procMap.Keys.Where(k => !seen.Contains(k)).ToList())
             {
@@ -93,6 +94,7 @@ public partial class MainWindow
 
             string susp = _pm.SuspendedCount > 0 ? $" · {_pm.SuspendedCount} suspensos" : "";
             ProcSummary.Text = $"{samples.Count} PROGRAMAS · {pidCount} PROCESSOS · CPU {Math.Min(100, totalCpu):N0} %{susp}";
+            UpdateProcChips(totalCpu, totalDisk, totalNet);
             UpdateProcButtons();
         }
         catch (Exception ex) { ProcResult.Text = $"Não foi possível ler os processos: {ex.Message}"; }
@@ -102,7 +104,7 @@ public partial class MainWindow
     private static void UpdateRow(ProcRow row, ProcessManager.Sample s)
     {
         row.Pids = s.Pids; row.Count = s.Pids.Count;
-        row.Cpu = s.Cpu; row.MemoryBytes = s.Mem; row.DiskBps = s.Disk;
+        row.Cpu = s.Cpu; row.MemoryBytes = s.Mem; row.DiskBps = s.Disk; row.NetBps = s.Net;
         row.State = s.State; row.Priority = s.Priority;
     }
 
@@ -204,5 +206,42 @@ public partial class MainWindow
             menu.Items.Add(item);
         }
         menu.IsOpen = true;
+    }
+
+    // ----- Ordenar por (CPU, memória, disco, rede) com o total ao vivo no próprio filtro -----
+
+    private bool _procChipSync;
+
+    private void UpdateProcChips(double cpu, long disk, long net)
+    {
+        var (total, avail) = Optimizer.MemoryStatus();
+        double memPct = total > 0 ? (total - avail) * 100.0 / total : 0;
+        ChipSortCpu.Content = $"CPU · {Math.Min(100, cpu):N0} %";
+        ChipSortMem.Content = $"Memória · {memPct:N0} %";
+        ChipSortDisk.Content = $"Disco · {disk / 1048576.0:N1} MB/s";
+        if (_pm.NetAvailable) { ChipSortNet.Content = $"Rede · {net * 8 / 1e6:N1} Mbps"; ChipSortNet.ToolTip = null; }
+        else
+        {
+            ChipSortNet.Content = "Rede · —";
+            ChipSortNet.ToolTip = "A leitura de rede por processo precisa do app como administrador" +
+                                  (_pm.NetError is { Length: > 0 } err ? $" ({err})" : "") + ".";
+        }
+    }
+
+    private void ProcSortChip_Checked(object sender, RoutedEventArgs e)
+    {
+        if (_procView == null || _procChipSync || sender is not RadioButton { Tag: string prop }) return;
+        _procView.SortDescriptions.Clear();
+        _procView.SortDescriptions.Add(new SortDescription(prop,
+            prop == nameof(ProcRow.Title) ? ListSortDirection.Ascending : ListSortDirection.Descending));
+    }
+
+    /// <summary>Clicar no cabeçalho da tabela também vale: o filtro acompanha a coluna escolhida.</summary>
+    private void ProcGrid_Sorting(object sender, DataGridSortingEventArgs e)
+    {
+        _procChipSync = true;
+        foreach (var chip in new[] { ChipSortName, ChipSortCpu, ChipSortMem, ChipSortDisk, ChipSortNet })
+            chip.IsChecked = (string)chip.Tag == e.Column.SortMemberPath;
+        _procChipSync = false;
     }
 }
