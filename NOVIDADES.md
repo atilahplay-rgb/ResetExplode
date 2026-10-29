@@ -3,6 +3,7 @@
 **Nova página · RESET FERRAMENTAS › Processos** (estilo Gerenciador de Tarefas do Windows 11)
 - Tabela ao vivo (1 s, igual ao Gerenciador de Tarefas; dá para pôr em Alta, Baixa ou Pausar) com nome, quantidade, estado, CPU, memória, E/S de disco e prioridade; ordena ao clicar no cabeçalho e tem busca por nome ou PID.
 - Coluna **Rede** (Mbps por programa, via ETW; precisa de administrador) e filtro **Ordenar por** Nome, CPU, Memória, Disco ou Rede, com o total ao vivo em cada opção. Clicar no cabeçalho também vale.
+- Layout no estilo do Gerenciador: totais no topo de cada coluna (CPU, Memória, Disco, Rede), números à direita, quantidade ao lado do nome ("Firefox (19)"), linhas recuadas sob cada seção e mapa de calor nas células de maior consumo.
 - A lista é separada em **Aplicativos** (programas com janela) e **Processos em segundo plano**, como no Gerenciador; a ordenação vale dentro de cada seção.
 - **Finalizar tarefa** (ou tecla Delete): encerra o programa e os processos filhos, com confirmação.
 - **Modo de eficiência**: prioridade baixa + economia de energia sem fechar o programa. **Suspender/Retomar**: congela sem fechar. **Prioridade** por processo.

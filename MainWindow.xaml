@@ -99,6 +99,19 @@
         <Style x:Key="MonoCell" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Mono}"/>
         </Style>
+        <Style x:Key="NumCell" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+        </Style>
+        <Style x:Key="NameCell" TargetType="TextBlock">
+            <Setter Property="Margin" Value="22,0,0,0"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsHeader}" Value="True">
+                    <Setter Property="Margin" Value="0"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         <Style x:Key="MutedCell" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource Muted}"/>
         </Style>
@@ -1274,19 +1287,15 @@
                         <DataGrid x:Name="SensorGrid" AutoGenerateColumns="False" IsReadOnly="True"
                                   CanUserResizeColumns="False"
                                   VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.ScrollUnit="Pixel">
-                            <DataGrid.RowStyle>
-                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsHeader}" Value="True">
-                                            <Setter Property="FontSize" Value="15"/>
-                                            <Setter Property="FontWeight" Value="SemiBold"/>
-                                            <Setter Property="MinHeight" Value="44"/>
-                                            <Setter Property="IsHitTestVisible" Value="False"/>
-                                            <Setter Property="Focusable" Value="False"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGrid.RowStyle>
+                            <DataGrid.GroupStyle>
+                                <GroupStyle>
+                                    <GroupStyle.HeaderTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" Margin="12,22,0,8"/>
+                                        </DataTemplate>
+                                    </GroupStyle.HeaderTemplate>
+                                </GroupStyle>
+                            </DataGrid.GroupStyle>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="SENSOR" Binding="{Binding Name}" Width="*"/>
                                 <DataGridTextColumn Header="TIPO" Binding="{Binding Category}" Width="130" ElementStyle="{StaticResource MutedCell}"/>
@@ -2285,28 +2294,77 @@
 
                     <Border Grid.Row="3" Style="{StaticResource CardBorder}" Padding="6,14,6,6">
                         <DataGrid x:Name="ProcGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
-                                  CanUserResizeColumns="False" EnableRowVirtualization="True" KeyDown="ProcGrid_KeyDown"
+                                  CanUserResizeColumns="False" EnableRowVirtualization="True" MinRowHeight="28" KeyDown="ProcGrid_KeyDown"
                                   SelectionChanged="ProcGrid_SelectionChanged" Sorting="ProcGrid_Sorting" VirtualizingPanel.ScrollUnit="Pixel">
-                            <DataGrid.GroupStyle>
-                                <GroupStyle>
-                                    <GroupStyle.HeaderTemplate>
-                                        <DataTemplate>
-                                            <TextBlock FontSize="15" FontWeight="SemiBold" Margin="8,14,0,6">
-                                                <Run Text="{Binding Name, Mode=OneWay}"/><Run Text=" ("/><Run Text="{Binding ItemCount, Mode=OneWay}"/><Run Text=")"/>
-                                            </TextBlock>
-                                        </DataTemplate>
-                                    </GroupStyle.HeaderTemplate>
-                                </GroupStyle>
-                            </DataGrid.GroupStyle>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsHeader}" Value="True">
+                                            <Setter Property="FontSize" Value="15"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="MinHeight" Value="44"/>
+                                            <Setter Property="IsHitTestVisible" Value="False"/>
+                                            <Setter Property="Focusable" Value="False"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="NOME" Binding="{Binding Title}" SortMemberPath="Title" Width="*"/>
-                                <DataGridTextColumn Header="QTD." Binding="{Binding CountText}" SortMemberPath="Count" Width="60" ElementStyle="{StaticResource MutedMonoCell}"/>
-                                <DataGridTextColumn Header="ESTADO" Binding="{Binding State}" SortMemberPath="State" Width="130" ElementStyle="{StaticResource MutedCell}"/>
-                                <DataGridTextColumn Header="CPU" Binding="{Binding CpuText}" SortMemberPath="Cpu" Width="90" ElementStyle="{StaticResource MonoCell}"/>
-                                <DataGridTextColumn Header="MEMÓRIA" Binding="{Binding MemoryText}" SortMemberPath="MemoryBytes" Width="110" ElementStyle="{StaticResource MonoCell}"/>
-                                <DataGridTextColumn Header="E/S (DISCO)" Binding="{Binding DiskText}" SortMemberPath="DiskBps" Width="120" ElementStyle="{StaticResource MonoCell}"/>
-                                <DataGridTextColumn Header="REDE" Binding="{Binding NetText}" SortMemberPath="NetBps" Width="110" ElementStyle="{StaticResource MonoCell}"/>
-                                <DataGridTextColumn Header="PRIORIDADE" Binding="{Binding Priority}" SortMemberPath="Priority" Width="140" ElementStyle="{StaticResource MutedCell}"/>
+                                <DataGridTextColumn Header="Nome" Binding="{Binding DisplayName}" SortMemberPath="Title" Width="*" ElementStyle="{StaticResource NameCell}"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding State}" SortMemberPath="State" Width="120" ElementStyle="{StaticResource MutedCell}"/>
+                                <DataGridTextColumn SortMemberPath="Cpu" Binding="{Binding CpuText}" Width="84" ElementStyle="{StaticResource NumCell}">
+                                    <DataGridTextColumn.Header>
+                                        <StackPanel HorizontalAlignment="Right">
+                                            <TextBlock x:Name="HdrCpu" Text="—" FontSize="15" Foreground="{DynamicResource Fg}" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="CPU" HorizontalAlignment="Right"/>
+                                        </StackPanel>
+                                    </DataGridTextColumn.Header>
+                                    <DataGridTextColumn.CellStyle>
+                                        <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                            <Setter Property="Background" Value="{Binding CpuHeat}"/>
+                                        </Style>
+                                    </DataGridTextColumn.CellStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn SortMemberPath="MemoryBytes" Binding="{Binding MemoryText}" Width="104" ElementStyle="{StaticResource NumCell}">
+                                    <DataGridTextColumn.Header>
+                                        <StackPanel HorizontalAlignment="Right">
+                                            <TextBlock x:Name="HdrMem" Text="—" FontSize="15" Foreground="{DynamicResource Fg}" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="Memória" HorizontalAlignment="Right"/>
+                                        </StackPanel>
+                                    </DataGridTextColumn.Header>
+                                    <DataGridTextColumn.CellStyle>
+                                        <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                            <Setter Property="Background" Value="{Binding MemHeat}"/>
+                                        </Style>
+                                    </DataGridTextColumn.CellStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn SortMemberPath="DiskBps" Binding="{Binding DiskText}" Width="104" ElementStyle="{StaticResource NumCell}">
+                                    <DataGridTextColumn.Header>
+                                        <StackPanel HorizontalAlignment="Right">
+                                            <TextBlock x:Name="HdrDisk" Text="—" FontSize="15" Foreground="{DynamicResource Fg}" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="Disco" HorizontalAlignment="Right"/>
+                                        </StackPanel>
+                                    </DataGridTextColumn.Header>
+                                    <DataGridTextColumn.CellStyle>
+                                        <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                            <Setter Property="Background" Value="{Binding DiskHeat}"/>
+                                        </Style>
+                                    </DataGridTextColumn.CellStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn SortMemberPath="NetBps" Binding="{Binding NetText}" Width="104" ElementStyle="{StaticResource NumCell}">
+                                    <DataGridTextColumn.Header>
+                                        <StackPanel HorizontalAlignment="Right">
+                                            <TextBlock x:Name="HdrNet" Text="—" FontSize="15" Foreground="{DynamicResource Fg}" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="Rede" HorizontalAlignment="Right"/>
+                                        </StackPanel>
+                                    </DataGridTextColumn.Header>
+                                    <DataGridTextColumn.CellStyle>
+                                        <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                            <Setter Property="Background" Value="{Binding NetHeat}"/>
+                                        </Style>
+                                    </DataGridTextColumn.CellStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Prioridade" Binding="{Binding Priority}" SortMemberPath="Priority" Width="130" ElementStyle="{StaticResource MutedCell}"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>

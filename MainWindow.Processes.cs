@@ -126,6 +126,32 @@ public partial class MainWindow
         row.Pids = s.Pids; row.Count = s.Pids.Count;
         row.Cpu = s.Cpu; row.MemoryBytes = s.Mem; row.DiskBps = s.Disk; row.NetBps = s.Net;
         row.State = s.State; row.Priority = s.Priority; row.IsApp = s.AnyWindow;
+
+        // Mapa de calor das células, como no Gerenciador: quanto mais consumo, mais forte a cor de destaque.
+        row.CpuHeat = Heat(s.Cpu >= 20 ? 3 : s.Cpu >= 5 ? 2 : s.Cpu >= 0.5 ? 1 : 0);
+        double mb = s.Mem / 1048576.0;
+        row.MemHeat = Heat(mb >= 1500 ? 3 : mb >= 500 ? 2 : mb >= 100 ? 1 : 0);
+        double dmb = s.Disk / 1048576.0;
+        row.DiskHeat = Heat(dmb >= 10 ? 3 : dmb >= 1 ? 2 : dmb >= 0.1 ? 1 : 0);
+        double mbps = s.Net * 8 / 1e6;
+        row.NetHeat = Heat(mbps >= 10 ? 3 : mbps >= 1 ? 2 : mbps >= 0.1 ? 1 : 0);
+    }
+
+    private static readonly Dictionary<(System.Windows.Media.Color, int), System.Windows.Media.Brush> HeatCache = new();
+
+    private static System.Windows.Media.Brush Heat(int level)
+    {
+        if (level <= 0) return System.Windows.Media.Brushes.Transparent;
+        var accent = (Application.Current.TryFindResource("Accent") as System.Windows.Media.SolidColorBrush)?.Color
+                     ?? System.Windows.Media.Colors.White;
+        if (!HeatCache.TryGetValue((accent, level), out var brush))
+        {
+            byte alpha = level == 1 ? (byte)0x1C : level == 2 ? (byte)0x3A : (byte)0x66;
+            var b = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(alpha, accent.R, accent.G, accent.B));
+            b.Freeze();
+            HeatCache[(accent, level)] = brush = b;
+        }
+        return brush;
     }
 
     private List<ProcRow> SelectedProcs() => ProcGrid.SelectedItems.Cast<ProcRow>().Where(r => !r.IsHeader).ToList();
@@ -232,10 +258,16 @@ public partial class MainWindow
 
     private bool _procChipSync;
 
+    private static void SetHdr(TextBlock? t, string text) { if (t != null) t.Text = text; }
+
     private void UpdateProcChips(double cpu, long disk, long net)
     {
         var (total, avail) = Optimizer.MemoryStatus();
         double memPct = total > 0 ? (total - avail) * 100.0 / total : 0;
+        SetHdr(HdrCpu, $"{Math.Min(100, cpu):N0}%");
+        SetHdr(HdrMem, $"{memPct:N0}%");
+        SetHdr(HdrDisk, $"{disk / 1048576.0:N1} MB/s");
+        SetHdr(HdrNet, _pm.NetAvailable ? $"{net * 8 / 1e6:N1} Mbps" : "—");
         ChipSortCpu.Content = $"CPU · {Math.Min(100, cpu):N0} %";
         ChipSortMem.Content = $"Memória · {memPct:N0} %";
         ChipSortDisk.Content = $"Disco · {disk / 1048576.0:N1} MB/s";

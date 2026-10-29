@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
+using System.Windows.Media;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
 
@@ -25,8 +26,16 @@ public sealed class ProcRow : INotifyPropertyChanged
     private string _state = "";
     private string _priority = "";
 
-    public string Title { get => _title; set => Set(ref _title, value, nameof(Title)); }
-    public int Count { get => _count; set { if (Set(ref _count, value, nameof(Count))) Raise(nameof(CountText)); } }
+    public string Title { get => _title; set { if (Set(ref _title, value, nameof(Title))) Raise(nameof(DisplayName)); } }
+    public int Count { get => _count; set { if (Set(ref _count, value, nameof(Count))) { Raise(nameof(CountText)); Raise(nameof(DisplayName)); } } }
+    /// <summary>"Claude (8)": nome com a quantidade de processos, como no Gerenciador de Tarefas.</summary>
+    public string DisplayName => !IsHeader && Count > 1 ? $"{Title} ({Count})" : Title;
+
+    private Brush? _hCpu, _hMem, _hDisk, _hNet;
+    public Brush? CpuHeat { get => _hCpu; set => Set(ref _hCpu, value, nameof(CpuHeat)); }
+    public Brush? MemHeat { get => _hMem; set => Set(ref _hMem, value, nameof(MemHeat)); }
+    public Brush? DiskHeat { get => _hDisk; set => Set(ref _hDisk, value, nameof(DiskHeat)); }
+    public Brush? NetHeat { get => _hNet; set => Set(ref _hNet, value, nameof(NetHeat)); }
     public double Cpu { get => _cpu; set { if (Set(ref _cpu, value, nameof(Cpu))) Raise(nameof(CpuText)); } }
     public long MemoryBytes { get => _mem; set { if (Set(ref _mem, value, nameof(MemoryBytes))) Raise(nameof(MemoryText)); } }
     public long DiskBps { get => _disk; set { if (Set(ref _disk, value, nameof(DiskBps))) Raise(nameof(DiskText)); } }
@@ -40,10 +49,10 @@ public sealed class ProcRow : INotifyPropertyChanged
     public string Priority { get => _priority; set => Set(ref _priority, value, nameof(Priority)); }
 
     public string CountText => Count > 1 ? $"{Count}" : "";
-    public string CpuText => IsHeader ? "" : Cpu < 0.05 ? "0 %" : $"{Cpu:N1} %";
-    public string MemoryText => IsHeader ? "" : MemoryBytes >= 1_073_741_824 ? $"{MemoryBytes / 1073741824.0:N2} GB" : $"{MemoryBytes / 1048576.0:N0} MB";
+    public string CpuText => IsHeader ? "" : Cpu < 0.05 ? "0%" : $"{Cpu:N1}%";
+    public string MemoryText => IsHeader ? "" : $"{MemoryBytes / 1048576.0:N1} MB";
     public string NetText => IsHeader ? "" : NetBps < 1 ? "0 Mbps" : NetBps * 8 / 1e6 < 0.05 ? "0 Mbps" : $"{NetBps * 8 / 1e6:N1} Mbps";
-    public string DiskText => IsHeader ? "" : DiskBps < 1024 ? "0 MB/s" : DiskBps < 10_485_760 ? $"{DiskBps / 1048576.0:N2} MB/s" : $"{DiskBps / 1048576.0:N1} MB/s";
+    public string DiskText => IsHeader ? "" : DiskBps < 5243 ? "0 MB/s" : $"{DiskBps / 1048576.0:N1} MB/s";
 
     public event PropertyChangedEventHandler? PropertyChanged;
     private void Raise(string n) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
