@@ -14,6 +14,8 @@ public sealed class ProcRow : INotifyPropertyChanged
     public string Key { get; init; } = "";
     public bool Locked { get; set; }      // nunca pode ser finalizado
     public bool Critical { get; set; }    // do sistema: pede confirmação reforçada
+    public bool IsHeader { get; init; }   // linha de título de seção ("Aplicativos (N)")
+    public int FixedSection { get; init; } = -1;
     public List<int> Pids { get; set; } = new();
 
     private string _title = "";
@@ -31,17 +33,17 @@ public sealed class ProcRow : INotifyPropertyChanged
     public long NetBps { get => _net; set { if (Set(ref _net, value, nameof(NetBps))) Raise(nameof(NetText)); } }
     private bool _isApp;
     /// <summary>Tem janela aberta: vai para "Aplicativos"; sem janela, para "Processos em segundo plano" (como no Gerenciador).</summary>
-    public bool IsApp { get => _isApp; set { if (Set(ref _isApp, value, nameof(IsApp))) { Raise(nameof(Section)); Raise(nameof(SectionOrder)); } } }
-    public string Section => IsApp ? "Aplicativos" : "Processos em segundo plano";
-    public int SectionOrder => IsApp ? 0 : 1;
+    public bool IsApp { get => _isApp; set { if (Set(ref _isApp, value, nameof(IsApp))) { Raise(nameof(SectionOrder)); } } }
+    public int SectionOrder => FixedSection >= 0 ? FixedSection : IsApp ? 0 : 1;
+    public int RowRank => IsHeader ? 0 : 1;
     public string State { get => _state; set => Set(ref _state, value, nameof(State)); }
     public string Priority { get => _priority; set => Set(ref _priority, value, nameof(Priority)); }
 
     public string CountText => Count > 1 ? $"{Count}" : "";
-    public string CpuText => Cpu < 0.05 ? "0 %" : $"{Cpu:N1} %";
-    public string MemoryText => MemoryBytes >= 1_073_741_824 ? $"{MemoryBytes / 1073741824.0:N2} GB" : $"{MemoryBytes / 1048576.0:N0} MB";
-    public string NetText => NetBps < 1 ? "0 Mbps" : NetBps * 8 / 1e6 < 0.05 ? "0 Mbps" : $"{NetBps * 8 / 1e6:N1} Mbps";
-    public string DiskText => DiskBps < 1024 ? "0 MB/s" : DiskBps < 10_485_760 ? $"{DiskBps / 1048576.0:N2} MB/s" : $"{DiskBps / 1048576.0:N1} MB/s";
+    public string CpuText => IsHeader ? "" : Cpu < 0.05 ? "0 %" : $"{Cpu:N1} %";
+    public string MemoryText => IsHeader ? "" : MemoryBytes >= 1_073_741_824 ? $"{MemoryBytes / 1073741824.0:N2} GB" : $"{MemoryBytes / 1048576.0:N0} MB";
+    public string NetText => IsHeader ? "" : NetBps < 1 ? "0 Mbps" : NetBps * 8 / 1e6 < 0.05 ? "0 Mbps" : $"{NetBps * 8 / 1e6:N1} Mbps";
+    public string DiskText => IsHeader ? "" : DiskBps < 1024 ? "0 MB/s" : DiskBps < 10_485_760 ? $"{DiskBps / 1048576.0:N2} MB/s" : $"{DiskBps / 1048576.0:N1} MB/s";
 
     public event PropertyChangedEventHandler? PropertyChanged;
     private void Raise(string n) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));

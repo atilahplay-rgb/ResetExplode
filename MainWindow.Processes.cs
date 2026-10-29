@@ -18,6 +18,21 @@ public partial class MainWindow
     private ListCollectionView? _procView;
     private DispatcherTimer? _procTimer;
     private bool _procBusy;
+    private readonly ProcRow _hdrApps = new() { Name = "Aplicativos", Key = "#apps", Title = "Aplicativos", IsHeader = true, Locked = true, FixedSection = 0 };
+    private readonly ProcRow _hdrBg = new() { Name = "Segundo plano", Key = "#bg", Title = "Processos em segundo plano", IsHeader = true, Locked = true, FixedSection = 1 };
+
+    /// <summary>Atualiza os números dos títulos "Aplicativos (N)" e "Processos em segundo plano (N)" conforme a busca.</summary>
+    private void UpdateProcHeaders()
+    {
+        int apps = 0, bg = 0;
+        foreach (var r in _procRows)
+        {
+            if (r.IsHeader || !MatchesProcFilter(r)) continue;
+            if (r.IsApp) apps++; else bg++;
+        }
+        _hdrApps.Title = $"Aplicativos ({apps})";
+        _hdrBg.Title = $"Processos em segundo plano ({bg})";
+    }
     private int _procSpeed = 1; // 0 alta · 1 normal · 2 baixa · 3 pausada (igual ao Gerenciador de Tarefas)
     private static readonly TimeSpan[] ProcIntervals =
         { TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(1) };
@@ -39,14 +54,13 @@ public partial class MainWindow
         {
             _procView = new ListCollectionView(_procRows);
             _procView.IsLiveSorting = true;
-            _procView.IsLiveGrouping = true;
             foreach (var p in new[] { nameof(ProcRow.Title), nameof(ProcRow.Cpu), nameof(ProcRow.MemoryBytes), nameof(ProcRow.DiskBps),
-                                      nameof(ProcRow.NetBps), nameof(ProcRow.SectionOrder) })
+                                      nameof(ProcRow.NetBps), nameof(ProcRow.SectionOrder), nameof(ProcRow.RowRank) })
                 _procView.LiveSortingProperties.Add(p);
-            _procView.LiveGroupingProperties.Add(nameof(ProcRow.Section));
-            _procView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProcRow.Section)));
             ApplyProcSort(nameof(ProcRow.MemoryBytes), ListSortDirection.Descending);
             _procView.Filter = o => MatchesProcFilter((ProcRow)o);
+            _procRows.Add(_hdrApps);
+            _procRows.Add(_hdrBg);
             ProcGrid.ItemsSource = _procView;
 
             _procTimer = new DispatcherTimer(ProcIntervals[_procSpeed], DispatcherPriority.Normal,
@@ -59,6 +73,7 @@ public partial class MainWindow
 
     private bool MatchesProcFilter(ProcRow r)
     {
+        if (r.IsHeader) return true;
         string q = ProcSearch.Text.Trim();
         if (q.Length == 0) return true;
         return r.Title.Contains(q, StringComparison.OrdinalIgnoreCase) || r.Name.Contains(q, StringComparison.OrdinalIgnoreCase)
@@ -98,6 +113,7 @@ public partial class MainWindow
 
             string susp = _pm.SuspendedCount > 0 ? $" · {_pm.SuspendedCount} suspensos" : "";
             ProcSummary.Text = $"{samples.Count} PROGRAMAS · {pidCount} PROCESSOS · CPU {Math.Min(100, totalCpu):N0} %{susp}";
+            UpdateProcHeaders();
             UpdateProcChips(totalCpu, totalDisk, totalNet);
             UpdateProcButtons();
         }
@@ -112,7 +128,7 @@ public partial class MainWindow
         row.State = s.State; row.Priority = s.Priority; row.IsApp = s.AnyWindow;
     }
 
-    private List<ProcRow> SelectedProcs() => ProcGrid.SelectedItems.Cast<ProcRow>().ToList();
+    private List<ProcRow> SelectedProcs() => ProcGrid.SelectedItems.Cast<ProcRow>().Where(r => !r.IsHeader).ToList();
 
     private void UpdateProcButtons()
     {
@@ -131,7 +147,7 @@ public partial class MainWindow
 
     private void ProcGrid_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateProcButtons();
     private void BtnProcRefresh_Click(object sender, RoutedEventArgs e) { ProcResult.Text = ""; RefreshProcesses(); }
-    private void ProcSearch_Changed(object sender, TextChangedEventArgs e) => _procView?.Refresh();
+    private void ProcSearch_Changed(object sender, TextChangedEventArgs e) { _procView?.Refresh(); UpdateProcHeaders(); }
     private void ProcShowSystem_Changed(object sender, RoutedEventArgs e) { if (_procView != null) RefreshProcesses(); }
 
     private void ProcGrid_KeyDown(object sender, KeyEventArgs e)
@@ -244,6 +260,7 @@ public partial class MainWindow
         if (_procView == null) return;
         _procView.SortDescriptions.Clear();
         _procView.SortDescriptions.Add(new SortDescription(nameof(ProcRow.SectionOrder), ListSortDirection.Ascending));
+        _procView.SortDescriptions.Add(new SortDescription(nameof(ProcRow.RowRank), ListSortDirection.Ascending)); // o título fica no topo da seção
         _procView.SortDescriptions.Add(new SortDescription(prop, dir));
         foreach (var col in ProcGrid.Columns)
             col.SortDirection = col.SortMemberPath == prop ? dir : null;

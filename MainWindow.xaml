@@ -1274,15 +1274,19 @@
                         <DataGrid x:Name="SensorGrid" AutoGenerateColumns="False" IsReadOnly="True"
                                   CanUserResizeColumns="False"
                                   VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.ScrollUnit="Pixel">
-                            <DataGrid.GroupStyle>
-                                <GroupStyle>
-                                    <GroupStyle.HeaderTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" Margin="12,22,0,8"/>
-                                        </DataTemplate>
-                                    </GroupStyle.HeaderTemplate>
-                                </GroupStyle>
-                            </DataGrid.GroupStyle>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsHeader}" Value="True">
+                                            <Setter Property="FontSize" Value="15"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="MinHeight" Value="44"/>
+                                            <Setter Property="IsHitTestVisible" Value="False"/>
+                                            <Setter Property="Focusable" Value="False"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="SENSOR" Binding="{Binding Name}" Width="*"/>
                                 <DataGridTextColumn Header="TIPO" Binding="{Binding Category}" Width="130" ElementStyle="{StaticResource MutedCell}"/>
@@ -2148,33 +2152,8 @@
                     <StackPanel Margin="36,30,36,30">
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock Text="RESET OTIMIZA" Style="{StaticResource H1}"/>
-                            <TextBlock Text="Libera memória e ajusta o Windows para jogos" Style="{StaticResource Sub}"/>
+                            <TextBlock Text="Ajusta o Windows para jogos" Style="{StaticResource Sub}"/>
                         </StackPanel>
-
-                        <!-- Botão principal -->
-                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,14" Padding="24,20">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <Grid>
-                                        <TextBlock Text="MEMÓRIA RAM" Style="{StaticResource Label}"/>
-                                        <TextBlock x:Name="OptRamText" FontFamily="{StaticResource Mono}" HorizontalAlignment="Right"/>
-                                    </Grid>
-                                    <Grid Height="6" Background="{DynamicResource Line}" Margin="0,0,0,12">
-                                        <Border Background="{DynamicResource Accent}" RenderTransformOrigin="0,0.5">
-                                            <Border.RenderTransform>
-                                                <ScaleTransform x:Name="OptRamBar" ScaleX="0"/>
-                                            </Border.RenderTransform>
-                                        </Border>
-                                    </Grid>
-                                    <TextBlock Foreground="{DynamicResource Muted}" TextWrapping="Wrap">
-                                        Para fechar, congelar ou pôr programas em modo de eficiência, use a página Processos.
-                                    </TextBlock>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
 
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -2307,7 +2286,7 @@
                     <Border Grid.Row="3" Style="{StaticResource CardBorder}" Padding="6,14,6,6">
                         <DataGrid x:Name="ProcGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
                                   CanUserResizeColumns="False" EnableRowVirtualization="True" KeyDown="ProcGrid_KeyDown"
-                                  SelectionChanged="ProcGrid_SelectionChanged" Sorting="ProcGrid_Sorting" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.IsVirtualizingWhenGrouping="True">
+                                  SelectionChanged="ProcGrid_SelectionChanged" Sorting="ProcGrid_Sorting" VirtualizingPanel.ScrollUnit="Pixel">
                             <DataGrid.GroupStyle>
                                 <GroupStyle>
                                     <GroupStyle.HeaderTemplate>

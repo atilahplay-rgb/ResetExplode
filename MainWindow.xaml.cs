@@ -121,7 +121,6 @@ public partial class MainWindow : Window
                 CollectDashSample();
                 UpdateBottleneck();
                 if (PageBench.IsVisible) UpdateBenchLive();
-                if (PageOptimize.IsVisible) UpdateRamStatus();
             }
             finally { _tickBusy = false; }
         };
@@ -845,16 +844,6 @@ public partial class MainWindow : Window
             OptTweaks.ItemsSource = _tweaks.Where(t => t.Id != "power").ToList(); // o plano de energia tem seletor próprio
         }
         RefreshPowerPlans();
-        UpdateRamStatus();
-    }
-
-    private void UpdateRamStatus()
-    {
-        var (total, avail) = Optimizer.MemoryStatus();
-        if (total == 0) return;
-        double used = total - avail;
-        OptRamText.Text = $"{used / 1073741824.0:0.0} de {total / 1073741824.0:0.0} GB · {used / total:P0}";
-        OptRamBar.ScaleX = used / total;
     }
 
     private void Tweak_Click(object sender, RoutedEventArgs e)
