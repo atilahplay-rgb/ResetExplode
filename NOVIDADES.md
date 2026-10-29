@@ -22,7 +22,7 @@
 - Botão **REMOVER** com confirmação; o programa continua instalado e tudo pode ser desfeito em **Restaurar removidos**.
 
 **Nova página · RESET FERRAMENTAS › Instalar apps**
-- Os essenciais depois de formatar o PC: Steam, Google Chrome, Discord, Lightshot, 7-Zip, WinRAR e VLC.
+- Os essenciais depois de formatar o PC: Steam, Google Chrome, Mozilla Firefox, Discord, Lightshot, 7-Zip, WinRAR e VLC.
 - Instala pelo winget (instalador de pacotes da Microsoft que já vem no Windows): versão oficial mais recente,
   sem janelas, um app de cada vez, com o resultado de cada um na lista.
 - Mostra o que já está instalado; se o winget ainda não existir (PC recém-formatado), um botão abre a Microsoft Store
