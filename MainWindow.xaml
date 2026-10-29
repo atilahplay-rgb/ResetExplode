@@ -2307,7 +2307,18 @@
                     <Border Grid.Row="3" Style="{StaticResource CardBorder}" Padding="6,14,6,6">
                         <DataGrid x:Name="ProcGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
                                   CanUserResizeColumns="False" EnableRowVirtualization="True" KeyDown="ProcGrid_KeyDown"
-                                  SelectionChanged="ProcGrid_SelectionChanged" Sorting="ProcGrid_Sorting" VirtualizingPanel.ScrollUnit="Pixel">
+                                  SelectionChanged="ProcGrid_SelectionChanged" Sorting="ProcGrid_Sorting" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.IsVirtualizingWhenGrouping="True">
+                            <DataGrid.GroupStyle>
+                                <GroupStyle>
+                                    <GroupStyle.HeaderTemplate>
+                                        <DataTemplate>
+                                            <TextBlock FontSize="15" FontWeight="SemiBold" Margin="8,14,0,6">
+                                                <Run Text="{Binding Name, Mode=OneWay}"/><Run Text=" ("/><Run Text="{Binding ItemCount, Mode=OneWay}"/><Run Text=")"/>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </GroupStyle.HeaderTemplate>
+                                </GroupStyle>
+                            </DataGrid.GroupStyle>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="NOME" Binding="{Binding Title}" SortMemberPath="Title" Width="*"/>
                                 <DataGridTextColumn Header="QTD." Binding="{Binding CountText}" SortMemberPath="Count" Width="60" ElementStyle="{StaticResource MutedMonoCell}"/>

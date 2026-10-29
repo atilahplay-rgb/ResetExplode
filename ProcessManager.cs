@@ -29,6 +29,11 @@ public sealed class ProcRow : INotifyPropertyChanged
     public long MemoryBytes { get => _mem; set { if (Set(ref _mem, value, nameof(MemoryBytes))) Raise(nameof(MemoryText)); } }
     public long DiskBps { get => _disk; set { if (Set(ref _disk, value, nameof(DiskBps))) Raise(nameof(DiskText)); } }
     public long NetBps { get => _net; set { if (Set(ref _net, value, nameof(NetBps))) Raise(nameof(NetText)); } }
+    private bool _isApp;
+    /// <summary>Tem janela aberta: vai para "Aplicativos"; sem janela, para "Processos em segundo plano" (como no Gerenciador).</summary>
+    public bool IsApp { get => _isApp; set { if (Set(ref _isApp, value, nameof(IsApp))) { Raise(nameof(Section)); Raise(nameof(SectionOrder)); } } }
+    public string Section => IsApp ? "Aplicativos" : "Processos em segundo plano";
+    public int SectionOrder => IsApp ? 0 : 1;
     public string State { get => _state; set => Set(ref _state, value, nameof(State)); }
     public string Priority { get => _priority; set => Set(ref _priority, value, nameof(Priority)); }
 

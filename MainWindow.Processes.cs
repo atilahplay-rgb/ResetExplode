@@ -39,9 +39,13 @@ public partial class MainWindow
         {
             _procView = new ListCollectionView(_procRows);
             _procView.IsLiveSorting = true;
-            foreach (var p in new[] { nameof(ProcRow.Title), nameof(ProcRow.Cpu), nameof(ProcRow.MemoryBytes), nameof(ProcRow.DiskBps) })
+            _procView.IsLiveGrouping = true;
+            foreach (var p in new[] { nameof(ProcRow.Title), nameof(ProcRow.Cpu), nameof(ProcRow.MemoryBytes), nameof(ProcRow.DiskBps),
+                                      nameof(ProcRow.NetBps), nameof(ProcRow.SectionOrder) })
                 _procView.LiveSortingProperties.Add(p);
-            _procView.SortDescriptions.Add(new SortDescription(nameof(ProcRow.MemoryBytes), ListSortDirection.Descending));
+            _procView.LiveGroupingProperties.Add(nameof(ProcRow.Section));
+            _procView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProcRow.Section)));
+            ApplyProcSort(nameof(ProcRow.MemoryBytes), ListSortDirection.Descending);
             _procView.Filter = o => MatchesProcFilter((ProcRow)o);
             ProcGrid.ItemsSource = _procView;
 
@@ -105,7 +109,7 @@ public partial class MainWindow
     {
         row.Pids = s.Pids; row.Count = s.Pids.Count;
         row.Cpu = s.Cpu; row.MemoryBytes = s.Mem; row.DiskBps = s.Disk; row.NetBps = s.Net;
-        row.State = s.State; row.Priority = s.Priority;
+        row.State = s.State; row.Priority = s.Priority; row.IsApp = s.AnyWindow;
     }
 
     private List<ProcRow> SelectedProcs() => ProcGrid.SelectedItems.Cast<ProcRow>().ToList();
@@ -231,17 +235,35 @@ public partial class MainWindow
     private void ProcSortChip_Checked(object sender, RoutedEventArgs e)
     {
         if (_procView == null || _procChipSync || sender is not RadioButton { Tag: string prop }) return;
-        _procView.SortDescriptions.Clear();
-        _procView.SortDescriptions.Add(new SortDescription(prop,
-            prop == nameof(ProcRow.Title) ? ListSortDirection.Ascending : ListSortDirection.Descending));
+        ApplyProcSort(prop, prop == nameof(ProcRow.Title) ? ListSortDirection.Ascending : ListSortDirection.Descending);
     }
 
-    /// <summary>Clicar no cabeçalho da tabela também vale: o filtro acompanha a coluna escolhida.</summary>
+    /// <summary>Aplica a ordenação mantendo "Aplicativos" sempre antes de "Processos em segundo plano".</summary>
+    private void ApplyProcSort(string prop, ListSortDirection dir)
+    {
+        if (_procView == null) return;
+        _procView.SortDescriptions.Clear();
+        _procView.SortDescriptions.Add(new SortDescription(nameof(ProcRow.SectionOrder), ListSortDirection.Ascending));
+        _procView.SortDescriptions.Add(new SortDescription(prop, dir));
+        foreach (var col in ProcGrid.Columns)
+            col.SortDirection = col.SortMemberPath == prop ? dir : null;
+    }
+
+    /// <summary>Clicar no cabeçalho também ordena (alternando crescente/decrescente) e o filtro acompanha a coluna.</summary>
     private void ProcGrid_Sorting(object sender, DataGridSortingEventArgs e)
     {
+        e.Handled = true; // a ordenação padrão do DataGrid desfaria a separação em seções
+        string prop = e.Column.SortMemberPath;
+        if (string.IsNullOrEmpty(prop)) return;
+        var dir = e.Column.SortDirection is { } cur
+            ? (cur == ListSortDirection.Ascending ? ListSortDirection.Descending : ListSortDirection.Ascending)
+            : (prop is nameof(ProcRow.Title) or nameof(ProcRow.State) or nameof(ProcRow.Priority)
+                ? ListSortDirection.Ascending : ListSortDirection.Descending);
+        ApplyProcSort(prop, dir);
+
         _procChipSync = true;
         foreach (var chip in new[] { ChipSortName, ChipSortCpu, ChipSortMem, ChipSortDisk, ChipSortNet })
-            chip.IsChecked = (string)chip.Tag == e.Column.SortMemberPath;
+            chip.IsChecked = (string)chip.Tag == prop;
         _procChipSync = false;
     }
 }
