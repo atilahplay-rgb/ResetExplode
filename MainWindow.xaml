@@ -2148,7 +2148,7 @@
                     <StackPanel Margin="36,30,36,30">
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock Text="RESET OTIMIZA" Style="{StaticResource H1}"/>
-                            <TextBlock Text="Libera memória, fecha o que atrapalha e ajusta o Windows para jogos" Style="{StaticResource Sub}"/>
+                            <TextBlock Text="Libera memória e ajusta o Windows para jogos" Style="{StaticResource Sub}"/>
                         </StackPanel>
 
                         <!-- Botão principal -->
@@ -2156,9 +2156,8 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel Margin="0,0,24,0">
+                                <StackPanel>
                                     <Grid>
                                         <TextBlock Text="MEMÓRIA RAM" Style="{StaticResource Label}"/>
                                         <TextBlock x:Name="OptRamText" FontFamily="{StaticResource Mono}" HorizontalAlignment="Right"/>
@@ -2171,13 +2170,9 @@
                                         </Border>
                                     </Grid>
                                     <TextBlock Foreground="{DynamicResource Muted}" TextWrapping="Wrap">
-                                        Um clique: limpa a memória em espera e fecha os programas marcados na lista abaixo.
-                                        Use antes de abrir um jogo.
+                                        Para fechar, congelar ou pôr programas em modo de eficiência, use a página Processos.
                                     </TextBlock>
-                                    <TextBlock x:Name="OptResult" TextWrapping="Wrap" Margin="0,10,0,0"/>
                                 </StackPanel>
-                                <Button x:Name="BtnOptimize" Grid.Column="1" Style="{StaticResource PrimaryButton}" Content="RESET OTIMIZA"
-                                        FontSize="16" Padding="34,16" VerticalAlignment="Center" Click="BtnOptimize_Click"/>
                             </Grid>
                         </Border>
 
@@ -2188,45 +2183,8 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Programas -->
-                            <Border Style="{StaticResource CardBorder}" VerticalAlignment="Top">
-                                <StackPanel>
-                                    <Grid Margin="0,0,0,6">
-                                        <TextBlock Text="PROGRAMAS PARA FECHAR" Style="{StaticResource Label}"/>
-                                        <Button Style="{StaticResource OutlineButton}" Content="ATUALIZAR" Padding="10,4" FontSize="11"
-                                                HorizontalAlignment="Right" VerticalAlignment="Top" Click="BtnRefreshApps_Click"/>
-                                    </Grid>
-                                    <TextBlock Foreground="{DynamicResource Faint}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,10">
-                                        Marcados = seguros de fechar durante o jogo. Programas com janela recebem o pedido de
-                                        fechar (como clicar no X) e não são forçados, para não perder nada não salvo.
-                                    </TextBlock>
-                                    <ItemsControl x:Name="OptApps">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Padding="0,8">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <CheckBox IsChecked="{Binding Selected}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                                        <StackPanel Grid.Column="1">
-                                                            <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"/>
-                                                            <TextBlock Text="{Binding Detail}" Foreground="{DynamicResource Faint}" FontSize="11" TextTrimming="CharacterEllipsis"/>
-                                                        </StackPanel>
-                                                        <TextBlock Grid.Column="2" Text="{Binding MemoryText}" FontFamily="{StaticResource Mono}"
-                                                                   Foreground="{DynamicResource Muted}" VerticalAlignment="Center" Margin="12,0,0,0"/>
-                                                    </Grid>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </Border>
-
                             <!-- Ajustes do Windows -->
-                            <Border Grid.Column="2" Style="{StaticResource CardBorder}" VerticalAlignment="Top">
+                            <Border Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource CardBorder}" VerticalAlignment="Top">
                                 <StackPanel>
                                     <Grid Margin="0,0,0,6">
                                         <TextBlock Text="AJUSTES DO WINDOWS PARA JOGOS" Style="{StaticResource Label}"/>
@@ -2327,7 +2285,8 @@
                                     IsEnabled="False" Click="BtnProcSuspend_Click" ToolTip="Congela o programa (0% de CPU) sem fechar; RETOMAR devolve"/>
                             <Button x:Name="BtnProcPriority" Style="{StaticResource OutlineButton}" Content="PRIORIDADE ▾" Padding="14,8" Margin="0,0,8,0"
                                     IsEnabled="False" Click="BtnProcPriority_Click"/>
-                            <Button Style="{StaticResource OutlineButton}" Content="ATUALIZAR" Padding="14,8" Margin="0,0,18,0" Click="BtnProcRefresh_Click"/>
+                            <Button x:Name="BtnProcSpeed" Style="{StaticResource OutlineButton}" Content="VELOCIDADE: NORMAL" Padding="14,8" Margin="0,0,18,0"
+                                    Click="BtnProcSpeed_Click" ToolTip="Alta (0,5 s) · Normal (1 s) · Baixa (4 s) · Pausada, como no Gerenciador de Tarefas"/>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <CheckBox x:Name="ProcShowSystem" Checked="ProcShowSystem_Changed" Unchecked="ProcShowSystem_Changed" VerticalAlignment="Center"/>
                                 <TextBlock Text="Mostrar processos do Windows" Foreground="{DynamicResource Muted}" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>

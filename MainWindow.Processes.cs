@@ -18,6 +18,20 @@ public partial class MainWindow
     private ListCollectionView? _procView;
     private DispatcherTimer? _procTimer;
     private bool _procBusy;
+    private int _procSpeed = 1; // 0 alta · 1 normal · 2 baixa · 3 pausada (igual ao Gerenciador de Tarefas)
+    private static readonly TimeSpan[] ProcIntervals =
+        { TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(1) };
+    private static readonly string[] ProcSpeedNames = { "ALTA", "NORMAL", "BAIXA", "PAUSADA" };
+
+    private void BtnProcSpeed_Click(object sender, RoutedEventArgs e)
+    {
+        _procSpeed = (_procSpeed + 1) % 4;
+        BtnProcSpeed.Content = $"VELOCIDADE: {ProcSpeedNames[_procSpeed]}";
+        if (_procTimer == null) return;
+        _procTimer.Stop();
+        _procTimer.Interval = ProcIntervals[_procSpeed];
+        if (_procSpeed != 3) _procTimer.Start();
+    }
 
     private void InitProcesses()
     {
@@ -31,10 +45,10 @@ public partial class MainWindow
             _procView.Filter = o => MatchesProcFilter((ProcRow)o);
             ProcGrid.ItemsSource = _procView;
 
-            _procTimer = new DispatcherTimer(TimeSpan.FromSeconds(2), DispatcherPriority.Background,
+            _procTimer = new DispatcherTimer(ProcIntervals[_procSpeed], DispatcherPriority.Normal,
                 (_, _) => { if (PageProcesses.IsVisible) RefreshProcesses(); }, Dispatcher);
         }
-        _procTimer!.Start();
+        if (_procSpeed != 3) _procTimer!.Start();
         RefreshProcesses();
     }
 

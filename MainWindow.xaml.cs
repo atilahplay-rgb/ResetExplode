@@ -62,7 +62,6 @@ public partial class MainWindow : Window
     private DateTime _benchPhaseStart;
 
     // RESET OTIMIZA
-    private List<BackgroundApp> _apps = new();
     private readonly List<Tweak> _tweaks = WindowsTweaks.All(); // só as definições; o estado é lido ao abrir a página
     private bool _optInit;
 
@@ -846,7 +845,6 @@ public partial class MainWindow : Window
             OptTweaks.ItemsSource = _tweaks.Where(t => t.Id != "power").ToList(); // o plano de energia tem seletor próprio
         }
         RefreshPowerPlans();
-        RefreshApps();
         UpdateRamStatus();
     }
 
@@ -857,44 +855,6 @@ public partial class MainWindow : Window
         double used = total - avail;
         OptRamText.Text = $"{used / 1073741824.0:0.0} de {total / 1073741824.0:0.0} GB · {used / total:P0}";
         OptRamBar.ScaleX = used / total;
-    }
-
-    private void RefreshApps()
-    {
-        _apps = Optimizer.ListApps();
-        OptApps.ItemsSource = _apps;
-    }
-
-    private void BtnRefreshApps_Click(object sender, RoutedEventArgs e) => RefreshApps();
-
-    private async void BtnOptimize_Click(object sender, RoutedEventArgs e)
-    {
-        var toClose = _apps.Where(a => a.Selected).ToList();
-        string list = toClose.Count == 0 ? "nenhum programa marcado"
-                                         : string.Join("\n", toClose.Select(a => $"  • {a.Title}"));
-        var r = MessageBox.Show("O RESET OTIMIZA vai:\n\n" +
-                                "1. Limpar a memória em espera e enxugar a RAM dos programas.\n" +
-                                $"2. Fechar os programas marcados:\n{list}\n\n" +
-                                "Salve o que estiver aberto nesses programas antes. Continuar?",
-                                "RESET OTIMIZA", MessageBoxButton.YesNo, MessageBoxImage.Question);
-        if (r != MessageBoxResult.Yes) return;
-
-        BtnOptimize.IsEnabled = false;
-        BtnOptimize.Content = "OTIMIZANDO…";
-        OptResult.Text = "";
-        var closeResult = await Task.Run(() => Optimizer.CloseApps(toClose));
-        var mem = await Task.Run(Optimizer.CleanMemory); // depois de fechar, para contar a memória liberada por eles também
-        BtnOptimize.IsEnabled = true;
-        BtnOptimize.Content = "RESET OTIMIZA";
-
-        var parts = new List<string> { $"Memória liberada: {mem.FreedBytes / 1048576.0:N0} MB" };
-        parts.Add(mem.StandbyPurged ? "memória em espera limpa" : $"memória em espera não limpa ({mem.StandbyError})");
-        if (closeResult.Closed.Count > 0) parts.Add($"fechados: {string.Join(", ", closeResult.Closed)}");
-        if (closeResult.NotClosed.Count > 0)
-            parts.Add($"não fecharam (podem ter algo não salvo ou pedir confirmação): {string.Join(", ", closeResult.NotClosed)}");
-        OptResult.Text = string.Join(" · ", parts) + ".";
-        RefreshApps();
-        UpdateRamStatus();
     }
 
     private void Tweak_Click(object sender, RoutedEventArgs e)
